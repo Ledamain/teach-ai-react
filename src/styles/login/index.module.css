@@ -1,0 +1,22 @@
+.container {
+    width: 350px;
+    height: 220px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-175px, -150px);
+    background-color: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.title{
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.btn{
+    width: 100%;
+}

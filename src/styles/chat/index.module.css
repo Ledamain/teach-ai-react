@@ -1,0 +1,123 @@
+/* chat/index.module.css */
+
+.container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    background-color: var(--background);
+    overflow: hidden;
+}
+
+.sideContainer {
+    width: 15%;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff !important;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.logoWrapper {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 15px;
+    padding-left: 10px;
+}
+
+.logo {
+    display: block;
+}
+
+.logoText {
+    font-size: 25px;
+    font-weight: 600;
+    color: #333;
+}
+
+.convFullHeight {
+    flex: 1;
+    background-color: inherit !important;
+    overflow-y: auto;
+}
+
+.rightContain {
+    width: 85%;
+    background-color: #ffffff !important;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0 0 24px 0; /* 移除左右内边距，交给内部容器控制 */
+    position: relative; /* 为滚动条定位做准备 */
+}
+
+/* 新增：消息容器外层 - 用于承载滚动条 */
+.messagesScrollContainer {
+    flex: 1;
+    width: 100%;
+    overflow-y: auto; /* 滚动条出现在最右侧 */
+    padding: 0 16px; /* 保留左右内边距 */
+}
+
+/* 修改：消息区域 - 80%宽度 + 居中 */
+.messagesArea {
+    width: 80%;
+    margin: 0 auto; /* 水平居中 */
+    padding: 16px 0;
+    min-height: 0; /* 修复 flex 布局下的高度问题 */
+}
+
+.senderWrapper {
+    flex-shrink: 0;
+    width: 80%; /* 和消息区域保持一致的宽度 */
+    max-width: 800px;
+    margin: 0 auto; /* 居中 */
+    padding: 0 16px;
+}
+
+.userWrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-left: 10px;
+    border-top: #bfbfbf solid 1px;
+}
+
+.userAvatar {
+    display: block;
+}
+
+.userText{
+    font-size: 16px;
+    font-weight: 300;
+    color: #333;
+}
+
+.userLabel{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* 可选：美化滚动条 */
+.rightContain::-webkit-scrollbar {
+    width: 6px;
+}
+
+.rightContain::-webkit-scrollbar-track {
+    background: #f5f5f5;
+}
+
+.rightContain::-webkit-scrollbar-thumb {
+    background: #d9d9d9;
+    border-radius: 3px;
+}
+
+.rightContain::-webkit-scrollbar-thumb:hover {
+    background: #bfbfbf;
+}

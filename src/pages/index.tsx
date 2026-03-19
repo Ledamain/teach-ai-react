@@ -76,3 +76,13 @@ export default function Home() {
     </div>
   );
 }
+
+// 服务端获取数据时执行重定向
+export async function getServerSideProps(context) {
+  const { res } = context;
+  // 设置重定向响应头，307 表示临时重定向（推荐）
+  res.writeHead(307, { Location: '/login' });
+  res.end();
+  // 返回空对象即可
+  return { props: {} };
+}

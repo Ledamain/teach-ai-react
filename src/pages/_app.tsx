@@ -1,6 +1,14 @@
-import "@/styles/globals.css";
-import type { AppProps } from "next/app";
+import React from 'react';
+import type { AppProps } from 'next/app';
 
-export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
-}
+import '@/styles/globals.css'
+import theme from '@/theme/ themeConfig';
+import {XProvider} from "@ant-design/x";
+
+const App = ({ Component, pageProps }: AppProps) => (
+    <XProvider theme={theme}>
+      <Component {...pageProps} />
+    </XProvider>
+);
+
+export default App;
