@@ -1,4 +1,4 @@
-import {LoginParams, LoginResult} from "@/types/login/LoginType";
+import {LoginParams, LoginResult, RegisterParams} from "@/types/login/LoginType";
 import {request} from "@/utils/request";
 import {message} from "antd";
 
@@ -30,5 +30,18 @@ export async function login(
         return res; // 返回完整响应数据，供组件后续处理（比如跳转）
     } catch (error) {
         throw error; // 抛出错误，让组件能捕获并处理（比如关闭loading）
+    }
+}
+
+export async function register(
+    params: Pick<RegisterParams, "nickname" |"username" | "password">
+): Promise<boolean> {
+    try {
+        const res = await request.post<boolean>("/clientRegister", params);
+        message.success('注册成功,请再次登录')
+        return true;
+    }catch ( error){
+        message.error('注册失败');
+        return false;
     }
 }

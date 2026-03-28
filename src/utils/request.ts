@@ -25,7 +25,7 @@ service.interceptors.request.use(
             const token = localStorage.getItem('token');
             if (token) {
                 // 确保config.headers非空，直接赋值Authorization
-                config.headers['Client-Authorization'] = `Bearer ${token}`;
+                config.headers['Client-Authorization'] = `${token}`;
             }
         }
         return config;
@@ -68,21 +68,26 @@ service.interceptors.response.use(
                     }
                     break;
                 case 403:
-                    showError('拒绝访问，无权限操作');
+                    // showError('拒绝访问，无权限操作');
+                    message.error('拒绝访问，无权限操作')
                     break;
                 case 404:
-                    showError('请求地址不存在');
+                    // showError('请求地址不存在');
+                    message.error('请求地址不存在')
                     break;
                 case 500:
-                    showError('服务器内部错误，请稍后再试');
+                    // showError('服务器内部错误，请稍后再试');
+                    message.error('服务器内部错误，请稍后再试')
                     break;
                 default:
                     showError(errMsg);
             }
         } else if (error.request) {
-            showError('网络连接异常，请检查网络');
+            // showError('网络连接异常，请检查网络');
+            message.error('网络连接异常，请检查网络')
         } else {
-            showError(error.message || '请求配置错误');
+            // showError(error.message || '请求配置错误');
+            message.error(error.message || '请求配置错误')
         }
 
         return Promise.reject(error);
@@ -94,11 +99,9 @@ service.interceptors.response.use(
 const request = {
     get<T = any>(
         url: string,
-        params: Record<string, any> = {},
-        // 核心修复：config默认值改为{ headers: {} }，补充必选的headers属性
-        config: InternalAxiosRequestConfig<any> = { headers: {} }
+        config: InternalAxiosRequestConfig<any> = { headers: {}, params: {} }
     ): Promise<T> {
-        return service.get(url, { params, ...config });
+        return service.get(url, config);
     },
     post<T = any>(
         url: string,

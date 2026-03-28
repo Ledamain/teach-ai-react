@@ -1,5 +1,4 @@
 /* chat/index.module.css */
-
 .container {
     width: 100%;
     height: 100vh;
@@ -11,7 +10,7 @@
 }
 
 .sideContainer {
-    width: 15%;
+    width: 12%;
     display: flex;
     flex-direction: column;
     background-color: #ffffff !important;
@@ -32,71 +31,131 @@
 }
 
 .logoText {
-    font-size: 25px;
+    margin-right: -10px;
+    font-size: 20px;
     font-weight: 600;
     color: #333;
 }
 
-.convFullHeight {
+/* 新增：会话容器整体布局 */
+.convContainer {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.convScrollInner :global(.ant-conversations-list .ant-conversations-item .ant-conversations-item-content .ant-conversations-item-label) {
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", sans-serif !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #333 !important;
+    line-height: 1.5 !important;
+    /* 新增：强制继承/覆盖所有子元素 */
+    display: block !important;
+}
+
+/* 选中状态：同样提升优先级 */
+.convScrollInner :global(.ant-conversations-list .ant-conversations-item.ant-conversations-item-active .ant-conversations-item-content .ant-conversations-item-label) {
+    color: #1677ff !important;
+    font-weight: 600 !important;
+}
+
+/* 分组标题样式（如“今天”“昨天”） */
+.convScrollInner :global(.ant-conversations-group-title) {
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    color: #666 !important;
+    font-family: "PingFang SC", sans-serif !important;
+}
+
+
+/* 固定的功能项区域 */
+.convFixed {
+    flex-shrink: 0; /* 不收缩 */
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+     flex: 0 0 21%;
+    overflow-y: auto; /* 功能项过多时内部滚动 */
+}
+
+.convFixedInner {
     background-color: inherit !important;
-    overflow-y: auto;
+}
+
+/* 可滚动的历史会话区域 */
+.convScroll {
+    flex: 1; /* 占满剩余空间 */
+    overflow-y: auto; /* 只滚动历史会话 */
+}
+
+.convScrollInner {
+    background-color: inherit !important;
+    height: 100%;
 }
 
 .rightContain {
-    width: 85%;
+    width: 88%;
     background-color: #ffffff !important;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 0 0 24px 0; /* 移除左右内边距，交给内部容器控制 */
-    position: relative; /* 为滚动条定位做准备 */
+    padding: 0 0 24px 0;
+    position: relative;
 }
 
-/* 新增：消息容器外层 - 用于承载滚动条 */
 .messagesScrollContainer {
     flex: 1;
     width: 100%;
-    overflow-y: auto; /* 滚动条出现在最右侧 */
-    padding: 0 16px; /* 保留左右内边距 */
+    overflow-y: auto;
+    padding: 0 16px;
 }
 
-/* 修改：消息区域 - 80%宽度 + 居中 */
 .messagesArea {
     width: 80%;
-    margin: 0 auto; /* 水平居中 */
+    margin: 0 auto;
     padding: 16px 0;
-    min-height: 0; /* 修复 flex 布局下的高度问题 */
+    min-height: 0;
 }
 
 .senderWrapper {
     flex-shrink: 0;
-    width: 80%; /* 和消息区域保持一致的宽度 */
+    width: 80%;
     max-width: 800px;
-    margin: 0 auto; /* 居中 */
+    margin: 0 auto;
     padding: 0 16px;
 }
 
 .userWrapper {
     display: flex;
     align-items: center;
-    margin-bottom: 15px;
-    padding-left: 10px;
+    justify-content: flex-start;
+    margin-bottom: 1px;
+    padding: 6px 10px;
     border-top: #bfbfbf solid 1px;
+    min-height: 48px;
 }
 
-.userAvatar {
-    display: block;
+/* 下拉菜单触发器：完整点击区域 + 完美垂直居中 */
+.userDropdownTrigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    width: 100%;
+    padding: 4px 0;
 }
 
-.userText{
-    font-size: 16px;
-    font-weight: 300;
+.userText {
+    font-size: 15px;
+    font-weight: 400;
     color: #333;
+    line-height: 1.2;
 }
 
-.userLabel{
+.userLabel {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -104,20 +163,24 @@
     font-weight: 400;
 }
 
-/* 可选：美化滚动条 */
-.rightContain::-webkit-scrollbar {
+/* 滚动条美化 */
+.convScroll::-webkit-scrollbar,
+.messagesScrollContainer::-webkit-scrollbar {
     width: 6px;
 }
 
-.rightContain::-webkit-scrollbar-track {
+.convScroll::-webkit-scrollbar-track,
+.messagesScrollContainer::-webkit-scrollbar-track {
     background: #f5f5f5;
 }
 
-.rightContain::-webkit-scrollbar-thumb {
+.convScroll::-webkit-scrollbar-thumb,
+.messagesScrollContainer::-webkit-scrollbar-thumb {
     background: #d9d9d9;
     border-radius: 3px;
 }
 
-.rightContain::-webkit-scrollbar-thumb:hover {
+.convScroll::-webkit-scrollbar-thumb:hover,
+.messagesScrollContainer::-webkit-scrollbar-thumb:hover {
     background: #bfbfbf;
 }

@@ -1,0 +1,199 @@
+/* styles/settings/index.module.css */
+
+.pageWrapper {
+    min-height: 100vh;
+    background-color: #f7f7f8;
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+    color: #0d0d0d;
+}
+
+.container {
+    width: 94%;
+    max-width: 1200px; /* 适当缩小最大宽度，让内容在宽屏下不至于太散 */
+    height: auto;
+    min-height: 800px;
+    background-color: #ffffff;
+    display: flex;
+    border-radius: 20px; /* 调大圆角更显现代感 */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    border: 1px solid #eef0f2;
+}
+
+/* 侧边栏：微调间距 */
+.sidebar {
+    width: 260px;
+    background-color: #fcfcfd;
+    border-right: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 16px; /* 增加顶部内边距 */
+    flex-shrink: 0;
+}
+
+.navTitle {
+    padding: 0 16px;
+    margin-bottom: 32px !important;
+    font-size: 22px !important;
+    letter-spacing: -0.5px;
+}
+
+.navItem {
+    padding: 14px 20px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    color: #5e5e66;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+}
+
+.navItem:hover {
+    background-color: #f2f2f7;
+    color: #000;
+}
+
+.navItem.active {
+    background-color: #000; /* 采用黑白极简风格，或者保持之前的蓝色 */
+    color: #fff;
+    font-weight: 500;
+}
+
+/* 主内容区：大幅度增加留白 */
+.mainContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+}
+
+.header {
+    padding: 60px 80px 32px; /* 顶部和左右留白拉开 */
+}
+
+.contentBody {
+    padding: 0 80px 80px; /* 保持左右与标题对齐 */
+}
+
+/* 列表项样式：通用/安全/数据 */
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 0; /* 增加垂直高度，让选项更“松快” */
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+    gap: 6px; /* 标题和描述之间增加微小间距 */
+}
+
+.label {
+    font-weight: 600;
+    font-size: 16px;
+    color: #1a1a1a;
+}
+
+.desc {
+    font-size: 14px;
+    color: #86868b;
+    line-height: 1.6;
+}
+
+/* --- 重点：个人资料表单优化 --- */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 40px; /* 拉开 Form.Item 之间的距离 */
+    padding-top: 20px;
+}
+
+.avatarSection {
+    display: flex;
+    align-items: center;
+    gap: 32px; /* 头像与右侧按钮间距 */
+    margin-bottom: 12px;
+}
+
+.avatar {
+    border: 4px solid #f0f0f5; /* 给头像加个浅色边框 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.avatarActions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 输入框高度与圆角 */
+.input {
+    border-radius: 10px;
+    padding: 12px 16px;
+    border: 1px solid #d2d2d7;
+    transition: all 0.2s;
+}
+
+.input:focus {
+    border-color: #0071e3;
+    box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+}
+
+.saveBtn {
+    height: 48px; /* 增加按钮高度 */
+    font-weight: 500;
+    border-radius: 10px;
+    margin-top: 20px;
+    font-size: 16px;
+}
+
+/* 危险区域 */
+.dangerZone {
+    margin-top: 40px;
+    border: 1px solid #fff1f0;
+    background-color: #fffbfa;
+    padding: 32px;
+    border-radius: 16px;
+}
+
+/* 侧边栏底部返回按钮 */
+.sidebarFooter {
+    margin-top: auto;
+    padding: 0 8px;
+}
+
+.backBtn {
+    text-align: left;
+    height: 44px;
+    border-radius: 10px;
+    color: #86868b !important;
+}
+
+/* 响应式微调 */
+@media (max-width: 1024px) {
+    .header, .contentBody {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        width: 100%;
+        border-radius: 0;
+    }
+    .sidebar {
+        width: 100%;
+        padding: 20px;
+        border-right: none;
+        border-bottom: 1px solid #eee;
+    }
+    .header, .contentBody {
+        padding: 30px 24px;
+    }
+}

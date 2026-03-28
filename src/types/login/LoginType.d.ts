@@ -19,6 +19,14 @@ export interface LoginParams {
     username?: string;
 }
 
+/** 注册接口参数 */
+export interface RegisterParams {
+    id: number;
+    password?: string;
+    username?: string;
+    nickname?: string;
+}
+
 /** 浏览器缓存用户信息参数*/
 export interface UserInfo {
     id?: number;
