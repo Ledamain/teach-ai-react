@@ -2,9 +2,6 @@
 import {
     CodeOutlined,
     CodeSandboxOutlined,
-    FileImageOutlined,
-    FileSearchOutlined,
-    SignatureOutlined,
     CopyOutlined,
     RedoOutlined,
     UserOutlined,
@@ -12,6 +9,11 @@ import {
     OpenAIOutlined,
     SyncOutlined, LogoutOutlined, SettingOutlined,
     CloudUploadOutlined, PaperClipOutlined, UploadOutlined,
+    PlayCircleOutlined,CheckOutlined,
+    DatabaseOutlined,
+    FileTextOutlined,
+    VerticalLeftOutlined,
+    VerticalRightOutlined,
 } from '@ant-design/icons';
 import {
     Conversations,
@@ -35,7 +37,8 @@ import {
     MenuProps,
     Divider,
     message, Button,
-    Typography, UploadProps, Upload
+    Typography, UploadProps, Upload, UploadFile,
+    Collapse, Switch, Spin
 } from 'antd';
 import {css, Global} from '@emotion/react';
 import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
@@ -49,6 +52,7 @@ import {ChatStreamParams} from "@/types/chat/ChatType";
 import {UserInfo} from "@/types/login/LoginType";
 import {getHistoryList, getHistory} from "@/api/chathistory";
 import {$URL} from "ufo";
+import {getKnowledgeList} from "@/api/repo";
 
 export type ChatChunkCallback = (chunk: string, isFinal: boolean) => void;
 
@@ -60,6 +64,7 @@ interface ChatMessage {
     content: string;
     thinking?: boolean;
     isHistorical?: boolean;
+    isComplete?: boolean;
 }
 
 interface HistoryListItem {
@@ -69,6 +74,7 @@ interface HistoryListItem {
     createTime: number;
     updateTime: number;
 }
+
 
 type MessagesMap = Record<string, ChatMessage[]>;
 
@@ -91,11 +97,6 @@ const assistantActionItems = [
     {key: 'copy', icon: <CopyOutlined/>, label: 'Copy'},
 ];
 
-const agentItems: GetProp<ConversationsProps, 'items'> = [
-    {key: 'coding', label: 'PPT 生成', icon: <CodeOutlined/>},
-    {key: 'createImage', label: 'Create Image', icon: <FileImageOutlined/>},
-    // {key: 'deepSearch', label: 'Deep Search', icon: <FileSearchOutlined/>},
-];
 
 const GROUP_ORDER: Record<string, number> = {
     '今天': 0,
@@ -147,40 +148,10 @@ const MessageContent: React.FC<{
     content: string;
     thinking?: boolean;
     isHistorical?: boolean;
-}> = ({ content, thinking, isHistorical }) => {
-    const [displayedContent, setDisplayedContent] = useState<string>(
-        isHistorical ? content : ''
-    );
-    const [isTyping, setIsTyping] = useState<boolean>(!isHistorical);
-
-    useEffect(() => {
-        if (isHistorical) {
-            setDisplayedContent(content);
-            setIsTyping(false);
-            return;
-        }
-        if (thinking) {
-            setIsTyping(false);
-            return;
-        }
-        if (!content) {
-            setDisplayedContent('');
-            setIsTyping(false);
-            return;
-        }
-        if (displayedContent === content) {
-            setIsTyping(false);
-            return;
-        }
-        const timer = setTimeout(() => {
-            setDisplayedContent((prev) => {
-                const next = content.substring(0, prev.length + 1);
-                if (next === content) setIsTyping(false);
-                return next;
-            });
-        }, 10);
-        return () => clearTimeout(timer);
-    }, [content, thinking, displayedContent, isHistorical]);
+    isComplete?: boolean;
+}> = ({ content, thinking, isHistorical, isComplete = false }) => {
+    const [viewModes, setViewModes] = useState<Record<number, 'code' | 'preview'>>({});
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
     if (thinking) {
         return (
@@ -194,82 +165,139 @@ const MessageContent: React.FC<{
         );
     }
 
-    // 只匹配标准格式：```lang\ncode\n```
-    const codeBlockRegex = /```([\w#+]*)\n([\s\S]*?)```/gm;
-    const parts: Array<{ type: 'text' | 'code'; content: string; lang?: string }> = [];
+    const fixedContent = content
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '\r')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n');
+
+    const codeBlockRegex = /```([a-zA-Z#]+)([\s\S]*?)```/gm;
+    const parts: Array<{ type: 'text' | 'code'; content: string; lang: string }> = [];
     let lastIndex = 0;
     let match;
 
-    while ((match = codeBlockRegex.exec(displayedContent)) !== null) {
-        const [full, langRaw, code] = match;
+    while ((match = codeBlockRegex.exec(fixedContent)) !== null) {
+        const [full, rawLang, rawCode] = match;
         const start = match.index;
 
-        // 前面的文本
         if (start > lastIndex) {
-            const t = displayedContent.slice(lastIndex, start);
-            if (t.trim()) parts.push({ type: 'text', content: t });
+            const t = fixedContent.slice(lastIndex, start);
+            if (t.trim()) parts.push({ type: 'text', content: t, lang: 'plaintext' });
         }
 
-        // 语言标准化
-        const lang = langRaw?.toLowerCase().trim() || 'plaintext';
-
+        const { lang, code } = splitLanguageAndCode(rawLang, rawCode);
         parts.push({
             type: 'code',
             content: code,
-            lang: VALID_LANGUAGES.has(lang) ? lang : 'plaintext',
+            lang: VALID_LANGUAGES.has(lang) ? lang : 'plaintext'
         });
-
         lastIndex = start + full.length;
     }
 
-    // 最后一段文本
-    if (lastIndex < displayedContent.length) {
-        const t = displayedContent.slice(lastIndex);
-        if (t.trim()) parts.push({ type: 'text', content: t });
+    if (lastIndex < fixedContent.length) {
+        const t = fixedContent.slice(lastIndex);
+        if (t.trim()) parts.push({ type: 'text', content: t, lang: 'plaintext' });
     }
 
+    function splitLanguageAndCode(rawLang: string, rawCode: string) {
+        const langList = ['java', 'python', 'js', 'javascript', 'html', 'css', 'cpp', 'c', 'sql', 'go', 'php'];
+        const lowerLang = rawLang.toLowerCase();
+        for (const lang of langList) {
+            if (lowerLang.startsWith(lang)) {
+                const rest = rawLang.slice(lang.length);
+                return { lang, code: rest + rawCode };
+            }
+        }
+        return { lang: 'plaintext', code: rawLang + rawCode };
+    }
+
+    const toggleViewMode = (index: number) => {
+        setViewModes(prev => ({ ...prev, [index]: prev[index] === 'preview' ? 'code' : 'preview' }));
+    };
+
+    const handleCopyCode = (text: string, index: number) => {
+        navigator.clipboard.writeText(text).then(() => {
+            setCopiedIndex(index);
+            setTimeout(() => setCopiedIndex(null), 1000);
+        });
+    };
+
     return (
-        <div style={{ lineHeight: 1.8, fontSize: 14, whiteSpace: 'pre-wrap' }}>
-            {parts.map((part, i) =>
-                part.type === 'text' ? (
-                    <div key={i} style={{ marginBottom: 8 }}>
-                        {part.content}
-                    </div>
-                ) : (
-                    <div key={i} style={{ margin: '12px 0', position: 'relative' }}>
-                        <div
-                            style={{
-                                position: 'absolute',
-                                top: 6,
-                                right: 10,
-                                background: 'rgba(0,0,0,0.3)',
-                                color: '#fff',
-                                padding: '2px 6px',
-                                borderRadius: 4,
-                                fontSize: 12,
-                                zIndex: 2,
-                            }}
-                        >
-                            {part.lang}
-                        </div>
-                        <SyntaxHighlighter
-                            language={part.lang}
-                            style={atomDark}
-                            wrapLongLines
-                            customStyle={{
-                                borderRadius: 8,
-                                padding: 16,
-                                fontSize: 13,
-                                margin: 0,
-                                whiteSpace: 'pre-wrap',
-                                wordBreak: 'break-word',
-                            }}
-                        >
+        <div style={{ lineHeight: 1.8, fontSize: 14 }}>
+            {parts.map((part, i) => {
+                if (part.type === 'text') {
+                    return <div key={i} style={{ marginBottom: 8, whiteSpace: 'pre-wrap' }}>{part.content}</div>;
+                }
+
+                if (!isComplete && !isHistorical) {
+                    return (
+                        <pre style={{
+                            background: '#1e1e2f',
+                            color: '#e0e0f0',
+                            borderRadius: 8,
+                            padding: 16,
+                            margin: '12px 0',
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-all',
+                            fontFamily: 'Consolas, Monaco, monospace'
+                        }}>
                             {part.content}
-                        </SyntaxHighlighter>
+                        </pre>
+                    );
+                }
+
+                const isHtml = part.lang === 'html';
+                const currentMode = viewModes[i] || 'code';
+
+                return (
+                    <div key={i} style={{ margin: '12px 0', position: 'relative' }}>
+                        <div style={{ position: 'absolute', top: 6, right: 10, display: 'flex', gap: 8, zIndex: 2 }}>
+                            {isHtml && (
+                                <Button size="small" type="primary" ghost={currentMode === 'preview'}
+                                        icon={currentMode === 'code' ? <PlayCircleOutlined /> : <CodeOutlined />}
+                                        onClick={() => toggleViewMode(i)}>
+                                    {currentMode === 'code' ? '运行预览' : '查看代码'}
+                                </Button>
+                            )}
+                            <Button size="small" type="text"
+                                    icon={copiedIndex === i ? <CheckOutlined style={{ color: '#52c11a' }} /> : <CopyOutlined style={{ color: '#bfbfbf' }} />}
+                                    onClick={() => handleCopyCode(part.content, i)} />
+                            <div style={{ background: 'rgba(0,0,0,0.3)', color: '#fff', padding: '2px 6px', borderRadius: 4, fontSize: 12 }}>{part.lang}</div>
+                        </div>
+
+                        {isHtml && currentMode === 'preview' ? (
+                            <div style={{ border: '1px solid #d9d9d9', borderRadius: 8, background: '#fff', overflow: 'hidden' }}>
+                                <div style={{ background: '#f5f5f5', padding: '4px 12px', fontSize: 12 }}>预览窗口</div>
+                                <iframe srcDoc={part.content} style={{ width: '100%', minHeight: 500, border: 0 }} sandbox="allow-scripts" />
+                            </div>
+                        ) : (
+                            <pre style={{
+                                margin: 0,
+                                padding: 0,
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-all'
+                            }}>
+                              <SyntaxHighlighter
+                                  language={part.lang}
+                                  style={atomDark}
+                                  wrapLines={false}
+                                  wrapLongLines={true}
+                                  customStyle={{
+                                      margin: 0,
+                                      padding: '16px',
+                                      fontSize: 13,
+                                      whiteSpace: 'pre-wrap',
+                                      wordBreak: 'break-all',
+                                      borderRadius: 8
+                                  }}
+                              >
+                                {part.content}
+                              </SyntaxHighlighter>
+                            </pre>
+                        )}
                     </div>
-                )
-            )}
+                );
+            })}
         </div>
     );
 };
@@ -320,9 +348,7 @@ const Chat: React.FC = () => {
     const [animContainerKey, setAnimContainerKey] = useState<string>('');
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    // ★ 新增：直接引用滚动容器，用于精确控制 scrollTop
     const messagesScrollContainerRef = useRef<HTMLDivElement>(null);
-    // ★ 新增：记录当前是否需要在历史消息动画结束后执行滚动
     const pendingHistoryScrollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const fullResponseRef = useRef<string>('');
@@ -340,16 +366,22 @@ const Chat: React.FC = () => {
 
     const [fileList, setFileList] = useState<UploadFile[]>([]);
 
+    // ========================
+    // 知识库状态（预留接口）
+    // ========================
+    const [knowledgeVisible, setKnowledgeVisible] = useState(false);
+    const [knowledgeList, setKnowledgeList] = useState<KnowledgeCategory[]>([]);
+    const [activeKnowledgeIds, setActiveKnowledgeIds] = useState<string[]>([]);
+    const [knowledgeLoading, setKnowledgeLoading] = useState(false);
+
     const uploadProps: UploadProps = useMemo(() => ({
         name: 'file',
         action: `${process.env.NEXT_PUBLIC_API_URL_LOC}/admin-api/infra/file/upload`,
         headers: {
             fileflag: `authorization-${encodeURIComponent(currentMemoryId)}`,
         },
-        // ★ 新增：将受控组件状态绑定到属性
         fileList,
         onChange(info) {
-            // ★ 新增：无论状态怎样改变，都同步更新组件的 fileList 状态
             setFileList(info.fileList);
 
             if (info.file.status !== 'uploading') {
@@ -363,6 +395,29 @@ const Chat: React.FC = () => {
         },
     }), [currentMemoryId, fileList]);
 
+    const agentItems: GetProp<ConversationsProps, 'items'> = [
+        { key: 'coding', label: 'PPT 生成', icon: <CodeOutlined /> },
+        {
+            key: 'knowledge',
+            label: (
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    width: '100%'
+                }}>
+                    知识库
+                    {knowledgeVisible ? (
+                        <VerticalRightOutlined />
+                    ) : (
+                        <VerticalLeftOutlined />
+                    )}
+                </div>
+            ),
+            icon: <DatabaseOutlined />,
+        },
+    ];
+
     const headerNode = (
         <Sender.Header title="附件上传" open={open} onOpenChange={setOpen}>
             <Flex vertical align="center" gap="small" style={{ marginBlock: token.paddingLG }}>
@@ -374,7 +429,6 @@ const Chat: React.FC = () => {
                     支持 pdf, doc, xlsx, ppt, txt, 图片等文件类型
                 </Typography.Text>
 
-                {/* ★ 修改：传入 fileList，Ant Design 会自动展示上传的文件名列表 */}
                 <Upload {...uploadProps} disabled={!currentMemoryId} fileList={fileList}>
                     <Button
                         icon={<UploadOutlined />}
@@ -387,11 +441,46 @@ const Chat: React.FC = () => {
         </Sender.Header>
     );
 
-
-
     useEffect(() => {
         activeKeyRef.current = activeKey;
     }, [activeKey]);
+
+    // ========================
+    // 获取知识库列表接口
+    // ========================
+    const fetchKnowledgeList = useCallback(async () => {
+        setKnowledgeLoading(true);
+        try {
+
+            // 模拟数据
+                const res = await getKnowledgeList();
+                setKnowledgeList(res);
+                setKnowledgeLoading(false);
+        } catch (err) {
+            message.error('获取知识库失败');
+            setKnowledgeLoading(false);
+        }
+    }, []);
+
+    // ========================
+    // 切换知识库启用状态
+    // ========================
+    const toggleKnowledge = (fileId: string) => {
+        setActiveKnowledgeIds(prev =>
+            prev.includes(fileId)
+                ? prev.filter(id => id !== fileId)
+                : [...prev, fileId]
+        );
+        // 预留接口：可在这里调用接口保存选中状态
+        // await axios.post('/api/knowledge/toggle', { fileId });
+    };
+
+    // 打开知识库面板时加载数据
+    useEffect(() => {
+        if (knowledgeVisible && knowledgeList.length === 0) {
+            fetchKnowledgeList();
+        }
+    }, [knowledgeVisible, knowledgeList, fetchKnowledgeList]);
 
     const fetchHistoryList = useCallback(async () => {
         const userId = getUserId();
@@ -430,17 +519,15 @@ const Chat: React.FC = () => {
         if (mounted) {
             fetchHistoryList();
 
-            // ★ 新增：如果当前没有激活的任务，且没有历史记录被选中，则自动创建一个“待定”的新对话
             if (!activeKey) {
                 const newKey = `new-${Date.now()}`;
-                const newMemoryId = generateMemoryId(); // 确保你有这个函数
+                const newMemoryId = generateMemoryId();
 
                 setMemoryIdMap(prev => ({ ...prev, [newKey]: newMemoryId }));
                 setMessagesMap(prev => ({ ...prev, [newKey]: [] }));
                 setActiveKey(newKey);
                 setAnimContainerKey(newKey);
 
-                // 设置左侧侧边栏的临时显示项
                 setPendingItem({
                     key: newKey,
                     label: '新对话',
@@ -448,7 +535,7 @@ const Chat: React.FC = () => {
                 });
             }
         }
-    }, [mounted]); // 注意：只在 mounted 变为 true 时执行一次
+    }, [mounted]);
 
     const handleRecordingChange = (nextRecording: boolean) => {
         if (!SpeechRecognitionRef.current) {
@@ -503,32 +590,21 @@ const Chat: React.FC = () => {
         if (mounted) fetchHistoryList();
     }, [mounted, fetchHistoryList]);
 
-    // ========================
-    // ★ 统一的滚动到底部函数
-    // 优先直接操控滚动容器的 scrollTop，更可靠
-    // ========================
     const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
-        // 方案1：直接设置滚动容器的 scrollTop（最可靠）
         if (messagesScrollContainerRef.current) {
             const container = messagesScrollContainerRef.current;
             container.scrollTo({top: container.scrollHeight, behavior});
         } else {
-            // 方案2：降级到 scrollIntoView
             messagesEndRef.current?.scrollIntoView({behavior});
         }
     }, []);
 
-    // 新消息到来时自动滚到底（非历史会话）
     useEffect(() => {
         if (historyKeySet.has(activeKey)) return;
         scrollToBottom();
-    }, [messagesMap[activeKey]]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [messagesMap[activeKey]]);
 
-    // ========================
-    // 切换会话
-    // ========================
     const handleActiveChange = useCallback(async (key: string) => {
-        // 清理上一次还未触发的历史滚动定时器
         if (pendingHistoryScrollRef.current) {
             clearTimeout(pendingHistoryScrollRef.current);
             pendingHistoryScrollRef.current = null;
@@ -569,22 +645,17 @@ const Chat: React.FC = () => {
                         content: m.content,
                         thinking: false,
                         isHistorical: true,
+                        isComplete: true,
                     }));
 
                     setMessagesMap(prev => ({...prev, [key]: msgs}));
                     setMemoryIdMap(prev => ({...prev, [key]: key}));
 
-                    // ★ 修复核心：
-                    // AnimatePresence mode="wait" 会先执行退出动画（~200ms），
-                    // 再挂载新内容并执行入场动画。
-                    // 所以等待时间 = 退出动画缓冲(250ms) + 入场动画总时长 + 余量(150ms)
-                    // 入场动画最后一条: (msgs.length - 1) * 70ms delay + 450ms duration
                     const exitBuffer = 250;
                     const lastMsgAnimEnd = (msgs.length - 1) * 70 + 450;
                     const totalWait = exitBuffer + lastMsgAnimEnd + 150;
 
                     pendingHistoryScrollRef.current = setTimeout(() => {
-                        // ★ 用 requestAnimationFrame 确保浏览器已完成本轮绘制
                         requestAnimationFrame(() => {
                             scrollToBottom('smooth');
                         });
@@ -606,7 +677,6 @@ const Chat: React.FC = () => {
         }
     }, [historyKeySet, messagesMap, scrollToBottom]);
 
-    // 组件卸载时清理定时器
     useEffect(() => {
         return () => {
             if (pendingHistoryScrollRef.current) {
@@ -650,9 +720,6 @@ const Chat: React.FC = () => {
         },
     ];
 
-    // ========================
-    // 新建会话
-    // ========================
     const newChatClick = () => {
         if (activeKey && !historyKeySet.has(activeKey)) {
             const currentMsgs = messagesMap[activeKey] || [];
@@ -668,14 +735,9 @@ const Chat: React.FC = () => {
         setActiveKey(newKey);
         setAnimContainerKey(newKey);
         setPendingItem({key: newKey, label: '新对话', group: '今天'});
-
-        // ★ 新增：清空上传文件列表状态
         setFileList([]);
     };
 
-    // ========================
-    // 流式回调
-    // ========================
     const handleChatChunk: ChatChunkCallback = useCallback((chunk, isFinal) => {
         if (isFinal) return;
         fullResponseRef.current += chunk;
@@ -690,13 +752,9 @@ const Chat: React.FC = () => {
         });
     }, []);
 
-    // ========================
-    // 发送消息
-    // ========================
     const handleSend = async (text: string) => {
         if (!text.trim() || sending) return;
 
-        // ★ 新增：检查文件上传状态拦截
         const isUploading = fileList.some(file => file.status === 'uploading');
         if (isUploading) {
             message.warning('文件正在上传中，请等待上传完成后再发送消息');
@@ -729,6 +787,7 @@ const Chat: React.FC = () => {
             role: 'user',
             content: text,
             isHistorical: false,
+            isComplete: true,
         };
 
         setMessagesMap((prev) => ({
@@ -754,14 +813,19 @@ const Chat: React.FC = () => {
                 ],
             }));
 
-            const streamParams: ChatStreamParams = {memoryId: currentMemoryId, prompt: text};
+            // 发送时携带选中的知识库ID
+            const streamParams: ChatStreamParams = {
+                memoryId: currentMemoryId,
+                prompt: text,
+                knowledgeIds: activeKnowledgeIds // 已预留
+            };
             await streamChat(streamParams, handleChatChunk, controller.signal);
 
             setMessagesMap((prev) => {
                 const msgs = [...(prev[currentActiveKey] || [])];
                 const last = msgs[msgs.length - 1];
                 if (last?.id === aiMessageIdRef.current) {
-                    msgs[msgs.length - 1] = {...last, thinking: false};
+                    msgs[msgs.length - 1] = {...last, thinking: false, isComplete: true};
                 }
                 return {...prev, [currentActiveKey]: msgs};
             });
@@ -775,7 +839,7 @@ const Chat: React.FC = () => {
                     const msgs = [...(prev[currentActiveKey] || [])];
                     const last = msgs[msgs.length - 1];
                     if (last?.role === 'assistant') {
-                        msgs[msgs.length - 1] = {...last, thinking: false};
+                        msgs[msgs.length - 1] = {...last, thinking: false, isComplete: true};
                     }
                     return {...prev, [currentActiveKey]: msgs};
                 });
@@ -810,7 +874,6 @@ const Chat: React.FC = () => {
     const handleCopy = useCallback((messageId: string) => {
         if (typeof window === 'undefined') return;
 
-        // 从当前会话中查找对应消息
         const currentMsgs = messagesMap[activeKey] || [];
         const targetMsg = currentMsgs.find(msg => msg.id === messageId);
 
@@ -819,7 +882,6 @@ const Chat: React.FC = () => {
             return;
         }
 
-        // 清理代码块标记
         const cleanContent = targetMsg.content
             .replace(/```\w+\n/g, '')
             .replace(/```/g, '')
@@ -851,9 +913,7 @@ const Chat: React.FC = () => {
                         <span className={styles.logoText}>教学辅助平台</span>
                     </div>
 
-                    {/* 拆分会话列表为固定区域和滚动区域 */}
                     <div className={styles.convContainer}>
-                        {/* 固定的功能项区域 */}
                         <div className={styles.convFixed}>
                             <Conversations
                                 className={styles.convFixedInner}
@@ -882,15 +942,18 @@ const Chat: React.FC = () => {
                                 }}
                                 items={agentItems}
                                 activeKey=""
-                                onActiveChange={() => {}}
+                                onActiveChange={(key) => {
+                                    if (key === 'knowledge') {
+                                        setKnowledgeVisible(!knowledgeVisible);
+                                    }
+                                }}
                             />
                         </div>
 
-                        {/* 可滚动的历史会话区域 */}
                         <div className={styles.convScroll}>
                             <Conversations
                                 className={styles.convScrollInner}
-                                creation={false} // 隐藏 New chat 按钮
+                                creation={false}
                                 activeKey={activeKey}
                                 onActiveChange={handleActiveChange}
                                 shortcutKeys={{
@@ -912,7 +975,6 @@ const Chat: React.FC = () => {
                             placement="top"
                             arrow={{ pointAtCenter: true }}
                         >
-                            {/* 整个区域包裹，让点击范围全覆盖 */}
                             <div className={styles.userDropdownTrigger}>
                                 <Avatar
                                     src={userInfo?.clientAvator || ''}
@@ -921,108 +983,184 @@ const Chat: React.FC = () => {
                                     fallback={<UserOutlined />}
                                 />
                                 <span className={styles.userText}>
-        {userInfo?.nickname || '未登录用户'}
-      </span>
+                                    {userInfo?.nickname || '未登录用户'}
+                                </span>
                             </div>
                         </Dropdown>
                     </div>
                 </div>
 
-                <div className={styles.rightContain}>
-                    {/* ★ 加上 ref，用于精确控制滚动位置 */}
-                    <div
-                        className={styles.messagesScrollContainer}
-                        ref={messagesScrollContainerRef}
-                    >
-                        <div className={styles.messagesArea}>
-                            {currentMessages.length === 0 ? (
-                                <motion.div
-                                    initial={{opacity: 0, y: 20}}
-                                    animate={{opacity: 1, y: 0}}
-                                    transition={{duration: 0.5, ease: 'easeOut'}}
-                                    style={{textAlign: 'center', color: token.colorTextSecondary, paddingTop: 40}}
-                                >
-                                    <Welcome
-                                        variant="borderless"
-                                        title="Hello, I'm AI智学教学辅助平台"
-                                        description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
-                                    />
-                                </motion.div>
-                            ) : (
-                                <AnimatePresence mode="wait">
-                                    <motion.div key={animContainerKey}>
-                                        {currentMessages.map((msg, index) => (
-                                            <motion.div
-                                                key={msg.id}
-                                                custom={index}
-                                                variants={msg.isHistorical ? historicalMsgVariants : newMsgVariants}
-                                                initial="hidden"
-                                                animate="visible"
-                                                style={{marginBottom: 12}}
-                                            >
-                                                <Bubble
-                                                    placement={msg.role === 'user' ? 'end' : 'start'}
-                                                    avatar={
-                                                        <Avatar
-                                                            icon={msg.role === 'user' ? <UserOutlined/> : <RobotOutlined/>}
-                                                            style={{
-                                                                backgroundColor: msg.role === 'user' ? token.colorPrimary : '#f0f0f0',
-                                                                color: msg.role === 'user' ? '#fff' : undefined,
-                                                            }}
-                                                        />
-                                                    }
-                                                    content={
-                                                        <MessageContent
-                                                            content={msg.content}
-                                                            thinking={msg.thinking}
-                                                            isHistorical={msg.isHistorical}
-                                                        />
-                                                    }
-                                                    footer={() => ( // 移除 content 参数
-                                                        <Actions
-                                                            items={msg.role === 'user' ? userActionItems : assistantActionItems}
-                                                            onClick={({key}) => {
-                                                                if (key === 'retry' && msg.role === 'user') handleRetry();
-                                                                else if (key === 'copy') handleCopy(msg.id); // 传递消息ID
-                                                            }}
-                                                        />
-                                                    )}
-                                                />
-                                            </motion.div>
-                                        ))}
+                {/* 右侧主区域 + 知识库侧边栏 */}
+                <div style={{ display: 'flex', width: '100%', position: 'relative' }}>
+                    <div className={styles.rightContain} style={{ flex: 1 }}>
+                        <div
+                            className={styles.messagesScrollContainer}
+                            ref={messagesScrollContainerRef}
+                        >
+                            <div className={styles.messagesArea}>
+                                {currentMessages.length === 0 ? (
+                                    <motion.div
+                                        initial={{opacity: 0, y: 20}}
+                                        animate={{opacity: 1, y: 0}}
+                                        transition={{duration: 0.5, ease: 'easeOut'}}
+                                        style={{textAlign: 'center', color: token.colorTextSecondary, paddingTop: 40}}
+                                    >
+                                        <Welcome
+                                            variant="borderless"
+                                            title="Hello, I'm AI智学教学辅助平台"
+                                            description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
+                                        />
                                     </motion.div>
-                                </AnimatePresence>
-                            )}
-                            <div ref={messagesEndRef}/>
+                                ) : (
+                                    <AnimatePresence mode="wait">
+                                        <motion.div key={animContainerKey}>
+                                            {currentMessages.map((msg, index) => (
+                                                <motion.div
+                                                    key={msg.id}
+                                                    custom={index}
+                                                    variants={msg.isHistorical ? historicalMsgVariants : newMsgVariants}
+                                                    initial="hidden"
+                                                    animate="visible"
+                                                    style={{marginBottom: 12}}
+                                                >
+                                                    <Bubble
+                                                        placement={msg.role === 'user' ? 'end' : 'start'}
+                                                        avatar={
+                                                            <Avatar
+                                                                icon={msg.role === 'user' ? <UserOutlined/> : <RobotOutlined/>}
+                                                                style={{
+                                                                    backgroundColor: msg.role === 'user' ? token.colorPrimary : '#f0f0f0',
+                                                                    color: msg.role === 'user' ? '#fff' : undefined,
+                                                                }}
+                                                            />
+                                                        }
+                                                        content={
+                                                            <MessageContent
+                                                                content={msg.content}
+                                                                thinking={msg.thinking}
+                                                                isHistorical={msg.isHistorical}
+                                                                isComplete={msg.isComplete ?? false}
+                                                            />
+                                                        }
+                                                        footer={() => (
+                                                            <Actions
+                                                                items={msg.role === 'user' ? userActionItems : assistantActionItems}
+                                                                onClick={({key}) => {
+                                                                    if (key === 'retry' && msg.role === 'user') handleRetry();
+                                                                    else if (key === 'copy') handleCopy(msg.id);
+                                                                }}
+                                                            />
+                                                        )}
+                                                    />
+                                                </motion.div>
+                                            ))}
+                                        </motion.div>
+                                    </AnimatePresence>
+                                )}
+                                <div ref={messagesEndRef}/>
+                            </div>
+                        </div>
+
+                        <div className={styles.senderWrapper}>
+                            <Sender
+                                header={headerNode}
+                                prefix={
+                                    <Button
+                                        type="text"
+                                        style={{ fontSize: 16 }}
+                                        icon={<PaperClipOutlined />}
+                                        onClick={() => {
+                                            setOpen(!open);
+                                        }}
+                                    />
+                                }
+                                loading={sending}
+                                value={inputValue}
+                                onChange={setInputValue}
+                                onSubmit={() => handleSend(inputValue)}
+                                onCancel={handleStop}
+                                placeholder="Message AI智学教学辅助平台..."
+                                autoSize={{minRows: 1, maxRows: 6}}
+                                allowSpeech={{
+                                    recording,
+                                    onRecordingChange: handleRecordingChange,
+                                }}
+                            />
                         </div>
                     </div>
 
-                    <div className={styles.senderWrapper}>
-                        <Sender
-                            header={headerNode}
-                            prefix={
-                                <Button
-                                    type="text"
-                                    style={{ fontSize: 16 }}
-                                    icon={<PaperClipOutlined />}
-                                    onClick={() => {
-                                        setOpen(!open);
-                                    }}
-                                />
-                            }
-                            loading={sending}
-                            value={inputValue}
-                            onChange={setInputValue}
-                            onSubmit={() => handleSend(inputValue)}
-                            onCancel={handleStop}
-                            placeholder="Message AI智学教学辅助平台..."
-                            autoSize={{minRows: 1, maxRows: 6}}
-                            allowSpeech={{
-                                recording,
-                                onRecordingChange: handleRecordingChange,
-                            }}
-                        />
-                    </div>
+                    {/* 知识库弹出面板 */}
+                    <AnimatePresence>
+                        {knowledgeVisible && (
+                            <motion.div
+                                initial={{ x: 300, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                exit={{ x: 300, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                style={{
+                                    width: '30%',
+                                    background: '#fff',
+                                    borderLeft: '1px solid #e5e7eb',
+                                    padding: '16px',
+                                    height: '100vh',
+                                    overflowY: 'auto',
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: 0,
+                                    zIndex: 10
+                                }}
+                            >
+                                <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>
+                                    知识库
+                                </div>
+
+                                <Spin spinning={knowledgeLoading}>
+                                    <Collapse
+                                        defaultActiveKey={knowledgeList.map(i => i.id)}
+                                        bordered={false}
+                                    >
+                                        {knowledgeList.map(cate => (
+                                            <Collapse.Panel
+                                                key={cate.id}
+                                                header={<Flex align="center" gap={4}><DatabaseOutlined />{cate.repoCategoryName}</Flex>}
+                                            >
+                                                <div style={{ paddingLeft: '8px' }}>
+                                                    {cate.repoDTOS.map(file => (
+                                                        <div
+                                                            key={file.id}
+                                                            style={{
+                                                                display: 'flex',
+                                                                justifyContent: 'space-between',
+                                                                alignItems: 'center',
+                                                                padding: '8px 0'
+                                                            }}
+                                                        >
+                                                            <Flex align="center" gap={6}>
+                                                                <FileTextOutlined style={{ color: '#666' }} />
+                                                                <span style={{ fontSize: '14px' }}>{file.repoTitle}</span>
+                                                            </Flex>
+                                                            <Switch
+                                                                checked={activeKnowledgeIds.includes(file.id)}
+                                                                onChange={() => toggleKnowledge(file.id)}
+                                                                checkedChildren="已启用"
+                                                                unCheckedChildren="启用"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </Collapse.Panel>
+                                        ))}
+                                    </Collapse>
+                                </Spin>
+
+                                {knowledgeList.length === 0 && !knowledgeLoading && (
+                                    <div style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
+                                        暂无知识库
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
         </>
