@@ -51,12 +51,21 @@ import {router} from "next/client";
 import {ChatStreamParams} from "@/types/chat/ChatType";
 import {UserInfo} from "@/types/login/LoginType";
 import {getHistoryList, getHistory} from "@/api/chathistory";
-import {$URL} from "ufo";
 import {getKnowledgeList} from "@/api/repo";
+
+// ========================
+// 引入 PPT 页面组件
+// ========================
+import PptGeneratePage from '@/pages/ppt/index'; // ← 按你实际的 PPT 页面路径调整
 
 export type ChatChunkCallback = (chunk: string, isFinal: boolean) => void;
 
 type MessageRole = 'user' | 'assistant';
+
+// ========================
+// 视图类型：聊天 or PPT
+// ========================
+type CurrentView = 'chat' | 'ppt';
 
 interface ChatMessage {
     id: string;
@@ -288,7 +297,9 @@ const MessageContent: React.FC<{
                                       fontSize: 13,
                                       whiteSpace: 'pre-wrap',
                                       wordBreak: 'break-all',
-                                      borderRadius: 8
+                                      borderRadius: 8,
+                                      maxWidth: '100%',
+                                      overflowX: 'hidden'
                                   }}
                               >
                                 {part.content}
@@ -306,25 +317,25 @@ const MessageContent: React.FC<{
 // 历史消息动画变体
 // ========================
 const historicalMsgVariants = {
-    hidden: {opacity: 0, y: -28, scale: 0.97},
+    hidden: {opacity: 0, y: -20, scale: 0.98},
     visible: (i: number) => ({
         opacity: 1,
         y: 0,
         scale: 1,
         transition: {
-            delay: i * 0.07,
-            duration: 0.45,
-            ease: [0.22, 1, 0.36, 1],
+            delay: i * 0.06,
+            duration: 0.4,
+            ease: [0.19, 1, 0.22, 1],
         },
     }),
 };
 
 const newMsgVariants = {
-    hidden: {opacity: 0, y: 16},
+    hidden: {opacity: 0, y: 12},
     visible: {
         opacity: 1,
         y: 0,
-        transition: {duration: 0.3, ease: 'easeOut'},
+        transition: {duration: 0.35, ease: [0.19, 1, 0.22, 1]},
     },
 };
 
@@ -347,6 +358,12 @@ const Chat: React.FC = () => {
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
     const [animContainerKey, setAnimContainerKey] = useState<string>('');
 
+    // ========================
+    // 新增：当前视图状态
+    // 'chat' = 聊天界面，'ppt' = PPT生成界面
+    // ========================
+    const [currentView, setCurrentView] = useState<CurrentView>('chat');
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesScrollContainerRef = useRef<HTMLDivElement>(null);
     const pendingHistoryScrollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -367,7 +384,7 @@ const Chat: React.FC = () => {
     const [fileList, setFileList] = useState<UploadFile[]>([]);
 
     // ========================
-    // 知识库状态（预留接口）
+    // 知识库状态
     // ========================
     const [knowledgeVisible, setKnowledgeVisible] = useState(false);
     const [knowledgeList, setKnowledgeList] = useState<KnowledgeCategory[]>([]);
@@ -383,7 +400,6 @@ const Chat: React.FC = () => {
         fileList,
         onChange(info) {
             setFileList(info.fileList);
-
             if (info.file.status !== 'uploading') {
                 console.log(info.file, info.fileList);
             }
@@ -396,7 +412,11 @@ const Chat: React.FC = () => {
     }), [currentMemoryId, fileList]);
 
     const agentItems: GetProp<ConversationsProps, 'items'> = [
-        { key: 'coding', label: 'PPT 生成', icon: <CodeOutlined /> },
+        {
+            key: 'coding',
+            label: 'PPT 生成',
+            icon: <CodeOutlined />,
+        },
         {
             key: 'knowledge',
             label: (
@@ -428,7 +448,6 @@ const Chat: React.FC = () => {
                 <Typography.Text type="secondary">
                     支持 pdf, doc, xlsx, ppt, txt, 图片等文件类型
                 </Typography.Text>
-
                 <Upload {...uploadProps} disabled={!currentMemoryId} fileList={fileList}>
                     <Button
                         icon={<UploadOutlined />}
@@ -446,16 +465,14 @@ const Chat: React.FC = () => {
     }, [activeKey]);
 
     // ========================
-    // 获取知识库列表接口
+    // 获取知识库列表
     // ========================
     const fetchKnowledgeList = useCallback(async () => {
         setKnowledgeLoading(true);
         try {
-
-            // 模拟数据
-                const res = await getKnowledgeList();
-                setKnowledgeList(res);
-                setKnowledgeLoading(false);
+            const res = await getKnowledgeList();
+            setKnowledgeList(res);
+            setKnowledgeLoading(false);
         } catch (err) {
             message.error('获取知识库失败');
             setKnowledgeLoading(false);
@@ -471,11 +488,8 @@ const Chat: React.FC = () => {
                 ? prev.filter(id => id !== fileId)
                 : [...prev, fileId]
         );
-        // 预留接口：可在这里调用接口保存选中状态
-        // await axios.post('/api/knowledge/toggle', { fileId });
     };
 
-    // 打开知识库面板时加载数据
     useEffect(() => {
         if (knowledgeVisible && knowledgeList.length === 0) {
             fetchKnowledgeList();
@@ -604,15 +618,22 @@ const Chat: React.FC = () => {
         scrollToBottom();
     }, [messagesMap[activeKey]]);
 
+    // ========================
+    // 点击历史对话 → 切回聊天视图
+    // ========================
     const handleActiveChange = useCallback(async (key: string) => {
         if (pendingHistoryScrollRef.current) {
             clearTimeout(pendingHistoryScrollRef.current);
             pendingHistoryScrollRef.current = null;
         }
 
+        // 切换到聊天视图
+        setCurrentView('chat');
+        // 关闭知识库面板（可选，防止遮挡）
+        setKnowledgeVisible(false);
+
         setActiveKey(key);
         setAnimContainerKey(key + '-' + Date.now());
-
         setFileList([]);
 
         if (historyKeySet.has(key) && !messagesMap[key]) {
@@ -720,14 +741,22 @@ const Chat: React.FC = () => {
         },
     ];
 
+    // ========================
+    // 新建对话 → 切回聊天视图
+    // ========================
     const newChatClick = () => {
-        if (activeKey && !historyKeySet.has(activeKey)) {
+        if (activeKey && !historyKeySet.has(activeKey) && currentView === 'chat') {
             const currentMsgs = messagesMap[activeKey] || [];
             if (currentMsgs.length === 0) {
                 message.warning('请先在当前对话中发起一次提问，再新建对话');
                 return;
             }
         }
+
+        // 切换到聊天视图
+        setCurrentView('chat');
+        setKnowledgeVisible(false);
+
         const newKey = `new-${Date.now()}`;
         const newMemoryId = generateMemoryId();
         setMemoryIdMap(prev => ({...prev, [newKey]: newMemoryId}));
@@ -813,11 +842,10 @@ const Chat: React.FC = () => {
                 ],
             }));
 
-            // 发送时携带选中的知识库ID
             const streamParams: ChatStreamParams = {
                 memoryId: currentMemoryId,
                 prompt: text,
-                knowledgeIds: activeKnowledgeIds // 已预留
+                knowledgeIds: activeKnowledgeIds
             };
             await streamChat(streamParams, handleChatChunk, controller.signal);
 
@@ -894,6 +922,42 @@ const Chat: React.FC = () => {
 
     const currentMessages = messagesMap[activeKey] || [];
 
+    // 侧边栏进入动画
+    const sidebarVariants = {
+        hidden: { opacity: 0, x: -20 },
+        visible: {
+            opacity: 1,
+            x: 0,
+            transition: { duration: 0.4, ease: [0.19, 1, 0.22, 1] }
+        }
+    };
+
+    // 主内容区进入动画
+    const mainVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: { duration: 0.5, ease: [0.19, 1, 0.22, 1], delay: 0.1 }
+        }
+    };
+
+    // ========================
+    // 视图切换动画变体
+    // ========================
+    const viewVariants = {
+        hidden: { opacity: 0, y: 8 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.35, ease: [0.19, 1, 0.22, 1] }
+        },
+        exit: {
+            opacity: 0,
+            y: -8,
+            transition: { duration: 0.2, ease: [0.19, 1, 0.22, 1] }
+        }
+    };
+
     return (
         <>
             <Global
@@ -907,13 +971,20 @@ const Chat: React.FC = () => {
                 `}
             />
             <div className={styles.container}>
-                <div className={styles.sideContainer}>
+                {/* ======================== 左侧边栏 ======================== */}
+                <motion.div
+                    className={styles.sideContainer}
+                    initial="hidden"
+                    animate="visible"
+                    variants={sidebarVariants}
+                >
                     <div className={styles.logoWrapper}>
-                        <Image src={logoImage} className={styles.logo} width={75} height={75} alt="logo"/>
+                        <Image src={logoImage} className={styles.logo} width={56} height={56} alt="logo"/>
                         <span className={styles.logoText}>教学辅助平台</span>
                     </div>
 
                     <div className={styles.convContainer}>
+                        {/* 功能入口区（PPT生成、知识库） */}
                         <div className={styles.convFixed}>
                             <Conversations
                                 className={styles.convFixedInner}
@@ -940,21 +1011,36 @@ const Chat: React.FC = () => {
                                     },
                                     collapsible: (group) => group !== 'More Features',
                                 }}
-                                items={agentItems}
-                                activeKey=""
+                                items={agentItems.map(item => ({
+                                    ...item,
+                                    // 高亮当前选中的功能项
+                                    ...(item.key === 'coding' && currentView === 'ppt'
+                                        ? { style: { backgroundColor: 'rgba(22, 93, 255, 0.08)', borderRadius: 8 } }
+                                        : {}),
+                                }))}
+                                // 不设置 activeKey，避免与对话列表的 activeKey 冲突
+                                activeKey={currentView === 'ppt' ? 'coding' : ''}
                                 onActiveChange={(key) => {
-                                    if (key === 'knowledge') {
+                                    if (key === 'coding') {
+                                        // 切换到 PPT 视图
+                                        setCurrentView('ppt');
+                                        // 关闭知识库面板
+                                        setKnowledgeVisible(false);
+                                        // 清空对话列表的选中状态
+                                        setActiveKey('');
+                                    } else if (key === 'knowledge') {
                                         setKnowledgeVisible(!knowledgeVisible);
                                     }
                                 }}
                             />
                         </div>
 
+                        {/* 历史对话列表 */}
                         <div className={styles.convScroll}>
                             <Conversations
                                 className={styles.convScrollInner}
                                 creation={false}
-                                activeKey={activeKey}
+                                activeKey={currentView === 'chat' ? activeKey : ''}
                                 onActiveChange={handleActiveChange}
                                 shortcutKeys={{
                                     items: ['Alt', 'number'],
@@ -988,180 +1074,247 @@ const Chat: React.FC = () => {
                             </div>
                         </Dropdown>
                     </div>
-                </div>
+                </motion.div>
 
-                {/* 右侧主区域 + 知识库侧边栏 */}
-                <div style={{ display: 'flex', width: '100%', position: 'relative' }}>
-                    <div className={styles.rightContain} style={{ flex: 1 }}>
-                        <div
-                            className={styles.messagesScrollContainer}
-                            ref={messagesScrollContainerRef}
-                        >
-                            <div className={styles.messagesArea}>
-                                {currentMessages.length === 0 ? (
-                                    <motion.div
-                                        initial={{opacity: 0, y: 20}}
-                                        animate={{opacity: 1, y: 0}}
-                                        transition={{duration: 0.5, ease: 'easeOut'}}
-                                        style={{textAlign: 'center', color: token.colorTextSecondary, paddingTop: 40}}
-                                    >
-                                        <Welcome
-                                            variant="borderless"
-                                            title="Hello, I'm AI智学教学辅助平台"
-                                            description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
-                                        />
-                                    </motion.div>
-                                ) : (
-                                    <AnimatePresence mode="wait">
-                                        <motion.div key={animContainerKey}>
-                                            {currentMessages.map((msg, index) => (
-                                                <motion.div
-                                                    key={msg.id}
-                                                    custom={index}
-                                                    variants={msg.isHistorical ? historicalMsgVariants : newMsgVariants}
-                                                    initial="hidden"
-                                                    animate="visible"
-                                                    style={{marginBottom: 12}}
-                                                >
-                                                    <Bubble
-                                                        placement={msg.role === 'user' ? 'end' : 'start'}
-                                                        avatar={
-                                                            <Avatar
-                                                                icon={msg.role === 'user' ? <UserOutlined/> : <RobotOutlined/>}
-                                                                style={{
-                                                                    backgroundColor: msg.role === 'user' ? token.colorPrimary : '#f0f0f0',
-                                                                    color: msg.role === 'user' ? '#fff' : undefined,
-                                                                }}
-                                                            />
-                                                        }
-                                                        content={
-                                                            <MessageContent
-                                                                content={msg.content}
-                                                                thinking={msg.thinking}
-                                                                isHistorical={msg.isHistorical}
-                                                                isComplete={msg.isComplete ?? false}
-                                                            />
-                                                        }
-                                                        footer={() => (
-                                                            <Actions
-                                                                items={msg.role === 'user' ? userActionItems : assistantActionItems}
-                                                                onClick={({key}) => {
-                                                                    if (key === 'retry' && msg.role === 'user') handleRetry();
-                                                                    else if (key === 'copy') handleCopy(msg.id);
-                                                                }}
-                                                            />
-                                                        )}
-                                                    />
-                                                </motion.div>
-                                            ))}
-                                        </motion.div>
-                                    </AnimatePresence>
-                                )}
-                                <div ref={messagesEndRef}/>
-                            </div>
-                        </div>
-
-                        <div className={styles.senderWrapper}>
-                            <Sender
-                                header={headerNode}
-                                prefix={
-                                    <Button
-                                        type="text"
-                                        style={{ fontSize: 16 }}
-                                        icon={<PaperClipOutlined />}
-                                        onClick={() => {
-                                            setOpen(!open);
-                                        }}
-                                    />
-                                }
-                                loading={sending}
-                                value={inputValue}
-                                onChange={setInputValue}
-                                onSubmit={() => handleSend(inputValue)}
-                                onCancel={handleStop}
-                                placeholder="Message AI智学教学辅助平台..."
-                                autoSize={{minRows: 1, maxRows: 6}}
-                                allowSpeech={{
-                                    recording,
-                                    onRecordingChange: handleRecordingChange,
-                                }}
-                            />
-                        </div>
-                    </div>
-
-                    {/* 知识库弹出面板 */}
-                    <AnimatePresence>
-                        {knowledgeVisible && (
+                {/* ======================== 右侧主区域 ======================== */}
+                <motion.div
+                    style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}
+                    initial="hidden"
+                    animate="visible"
+                    variants={mainVariants}
+                >
+                    <AnimatePresence mode="wait">
+                        {/* ── PPT 视图 ── */}
+                        {currentView === 'ppt' && (
                             <motion.div
-                                initial={{ x: 300, opacity: 0 }}
-                                animate={{ x: 0, opacity: 1 }}
-                                exit={{ x: 300, opacity: 0 }}
-                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                key="ppt-view"
+                                variants={viewVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
                                 style={{
-                                    width: '30%',
-                                    background: '#fff',
-                                    borderLeft: '1px solid #e5e7eb',
-                                    padding: '16px',
-                                    height: '100vh',
-                                    overflowY: 'auto',
-                                    position: 'absolute',
-                                    right: 0,
-                                    top: 0,
-                                    zIndex: 10
+                                    width: '100%',
+                                    height: '100%',
+                                    overflow: 'hidden',        /* 改为 hidden，防止溢出 */
+                                    background: '#F5F7FA',
+                                    position: 'relative',      /* 确保子元素 absolute 定位相对于此 */
                                 }}
                             >
-                                <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '16px' }}>
-                                    知识库
+                                <PptGeneratePage />
+                            </motion.div>
+                        )}
+
+                        {/* ── 聊天视图 ── */}
+                        {currentView === 'chat' && (
+                            <motion.div
+                                key="chat-view"
+                                variants={viewVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                style={{ display: 'flex', flex: 1, position: 'relative', width: '100%' }}
+                            >
+                                <div className={styles.rightContain} style={{ flex: 1 }}>
+                                    <div
+                                        className={styles.messagesScrollContainer}
+                                        ref={messagesScrollContainerRef}
+                                    >
+                                        <div className={styles.messagesArea}>
+                                            {currentMessages.length === 0 ? (
+                                                <motion.div
+                                                    initial={{opacity: 0, y: 16, scale: 0.98}}
+                                                    animate={{opacity: 1, y: 0, scale: 1}}
+                                                    transition={{duration: 0.5, ease: [0.19, 1, 0.22, 1]}}
+                                                    style={{textAlign: 'center', color: '#86868b', paddingTop: 80}}
+                                                >
+                                                    <Welcome
+                                                        variant="borderless"
+                                                        title="Hello, I'm AI智学教学辅助平台"
+                                                        description="Base on Ant Design, AGI product interface solution, create a better intelligent vision~"
+                                                    />
+                                                </motion.div>
+                                            ) : (
+                                                <AnimatePresence mode="wait">
+                                                    <motion.div key={animContainerKey}>
+                                                        {currentMessages.map((msg, index) => (
+                                                            <motion.div
+                                                                key={msg.id}
+                                                                custom={index}
+                                                                variants={msg.isHistorical ? historicalMsgVariants : newMsgVariants}
+                                                                initial="hidden"
+                                                                animate="visible"
+                                                                style={{marginBottom: 12}}
+                                                            >
+                                                                <Bubble
+                                                                    placement={msg.role === 'user' ? 'end' : 'start'}
+                                                                    avatar={
+                                                                        <Avatar
+                                                                            icon={msg.role === 'user' ? <UserOutlined/> : <RobotOutlined/>}
+                                                                            style={{
+                                                                                backgroundColor: msg.role === 'user' ? '#1a1a1a' : '#f2f2f7',
+                                                                                color: msg.role === 'user' ? '#fff' : '#5e5e66',
+                                                                                border: msg.role === 'user' ? 'none' : '1px solid #eef0f2',
+                                                                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
+                                                                            }}
+                                                                        />
+                                                                    }
+                                                                    content={
+                                                                        <MessageContent
+                                                                            content={msg.content}
+                                                                            thinking={msg.thinking}
+                                                                            isHistorical={msg.isHistorical}
+                                                                            isComplete={msg.isComplete ?? false}
+                                                                        />
+                                                                    }
+                                                                    footer={() => (
+                                                                        <Actions
+                                                                            items={msg.role === 'user' ? userActionItems : assistantActionItems}
+                                                                            onClick={({key}) => {
+                                                                                if (key === 'retry' && msg.role === 'user') handleRetry();
+                                                                                else if (key === 'copy') handleCopy(msg.id);
+                                                                            }}
+                                                                        />
+                                                                    )}
+                                                                />
+                                                            </motion.div>
+                                                        ))}
+                                                    </motion.div>
+                                                </AnimatePresence>
+                                            )}
+                                            <div ref={messagesEndRef}/>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.senderWrapper}>
+                                        <Sender
+                                            header={headerNode}
+                                            prefix={
+                                                <Button
+                                                    type="text"
+                                                    style={{ fontSize: 16 }}
+                                                    icon={<PaperClipOutlined />}
+                                                    onClick={() => {
+                                                        setOpen(!open);
+                                                    }}
+                                                />
+                                            }
+                                            loading={sending}
+                                            value={inputValue}
+                                            onChange={setInputValue}
+                                            onSubmit={() => handleSend(inputValue)}
+                                            onCancel={handleStop}
+                                            placeholder="Message AI智学教学辅助平台..."
+                                            autoSize={{minRows: 1, maxRows: 6}}
+                                            allowSpeech={{
+                                                recording,
+                                                onRecordingChange: handleRecordingChange,
+                                            }}
+                                        />
+                                    </div>
                                 </div>
 
-                                <Spin spinning={knowledgeLoading}>
-                                    <Collapse
-                                        defaultActiveKey={knowledgeList.map(i => i.id)}
-                                        bordered={false}
-                                    >
-                                        {knowledgeList.map(cate => (
-                                            <Collapse.Panel
-                                                key={cate.id}
-                                                header={<Flex align="center" gap={4}><DatabaseOutlined />{cate.repoCategoryName}</Flex>}
-                                            >
-                                                <div style={{ paddingLeft: '8px' }}>
-                                                    {cate.repoDTOS.map(file => (
-                                                        <div
-                                                            key={file.id}
+                                {/* 知识库弹出面板 */}
+                                <AnimatePresence>
+                                    {knowledgeVisible && (
+                                        <motion.div
+                                            initial={{ x: 320, opacity: 0 }}
+                                            animate={{ x: 0, opacity: 1 }}
+                                            exit={{ x: 320, opacity: 0 }}
+                                            transition={{ duration: 0.35, ease: [0.19, 1, 0.22, 1] }}
+                                            style={{
+                                                width: '40%',
+                                                background: '#fcfcfd',
+                                                borderLeft: '1px solid #eef0f2',
+                                                padding: '32px 24px',
+                                                height: '100%',
+                                                overflowY: 'auto',
+                                                position: 'absolute',
+                                                right: 0,
+                                                top: 0,
+                                                zIndex: 10,
+                                                boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.04)'
+                                            }}
+                                        >
+                                            <div style={{
+                                                fontSize: '18px',
+                                                fontWeight: 600,
+                                                marginBottom: '24px',
+                                                color: '#1a1a1a',
+                                                letterSpacing: '-0.3px'
+                                            }}>
+                                                知识库
+                                            </div>
+
+                                            <Spin spinning={knowledgeLoading}>
+                                                <Collapse
+                                                    defaultActiveKey={knowledgeList.map(i => i.id)}
+                                                    bordered={false}
+                                                    style={{ background: 'transparent' }}
+                                                >
+                                                    {knowledgeList.map(cate => (
+                                                        <Collapse.Panel
+                                                            key={cate.id}
+                                                            header={
+                                                                <Flex align="center" gap={8}>
+                                                                    <DatabaseOutlined style={{ color: '#86868b' }} />
+                                                                    <span style={{ fontWeight: 500, color: '#1a1a1a' }}>{cate.repoCategoryName}</span>
+                                                                </Flex>
+                                                            }
                                                             style={{
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between',
-                                                                alignItems: 'center',
-                                                                padding: '8px 0'
+                                                                marginBottom: '8px',
+                                                                borderRadius: '12px',
+                                                                overflow: 'hidden'
                                                             }}
                                                         >
-                                                            <Flex align="center" gap={6}>
-                                                                <FileTextOutlined style={{ color: '#666' }} />
-                                                                <span style={{ fontSize: '14px' }}>{file.repoTitle}</span>
-                                                            </Flex>
-                                                            <Switch
-                                                                checked={activeKnowledgeIds.includes(file.id)}
-                                                                onChange={() => toggleKnowledge(file.id)}
-                                                                checkedChildren="已启用"
-                                                                unCheckedChildren="启用"
-                                                            />
-                                                        </div>
+                                                            <div style={{ paddingLeft: '8px' }}>
+                                                                {cate.repoDTOS.map(file => (
+                                                                    <div
+                                                                        key={file.id}
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            justifyContent: 'space-between',
+                                                                            alignItems: 'center',
+                                                                            padding: '12px 8px',
+                                                                            borderRadius: '8px',
+                                                                            transition: 'background-color 0.2s ease',
+                                                                            marginBottom: '4px'
+                                                                        }}
+                                                                    >
+                                                                        <Flex align="center" gap={8}>
+                                                                            <FileTextOutlined style={{ color: '#86868b' }} />
+                                                                            <span style={{ fontSize: '14px', color: '#5e5e66' }}>{file.repoTitle}</span>
+                                                                        </Flex>
+                                                                        <Switch
+                                                                            checked={activeKnowledgeIds.includes(file.id)}
+                                                                            onChange={() => toggleKnowledge(file.id)}
+                                                                            checkedChildren="已启用"
+                                                                            unCheckedChildren="启用"
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </Collapse.Panel>
                                                     ))}
-                                                </div>
-                                            </Collapse.Panel>
-                                        ))}
-                                    </Collapse>
-                                </Spin>
+                                                </Collapse>
+                                            </Spin>
 
-                                {knowledgeList.length === 0 && !knowledgeLoading && (
-                                    <div style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
-                                        暂无知识库
-                                    </div>
-                                )}
+                                            {knowledgeList.length === 0 && !knowledgeLoading && (
+                                                <div style={{
+                                                    textAlign: 'center',
+                                                    color: '#86868b',
+                                                    padding: '40px 20px',
+                                                    fontSize: '14px'
+                                                }}>
+                                                    暂无知识库
+                                                </div>
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
+                </motion.div>
             </div>
         </>
     );

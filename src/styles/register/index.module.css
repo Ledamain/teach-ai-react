@@ -1,84 +1,225 @@
+/* OpenAI 风格注册页面 */
 .pageWrapper {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f9fafb;
+    background-color: #f7f7f8;
     padding: 20px;
     position: relative;
+    overflow: hidden;
+}
+
+/* 背景装饰 - 渐变光晕 */
+.pageWrapper::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 70% 30%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 30% 70%, rgba(0, 0, 0, 0.015) 0%, transparent 50%);
+    pointer-events: none;
+    animation: bgFloat 20s ease-in-out infinite reverse;
+}
+
+@keyframes bgFloat {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(2%, 2%) rotate(1deg); }
 }
 
 .loginCard {
     width: 100%;
     max-width: 420px;
     background: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
+    padding: 48px 40px;
+    border-radius: 20px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+    position: relative;
+    z-index: 1;
 }
 
 .header {
     text-align: center;
-    margin-bottom: 32px;
-    transition: all 0.3s ease;
+    margin-bottom: 36px;
 }
 
-.loginCard:has(.submitBtn.ant-btn-loading) .header {
-    margin-bottom: 20px;
-    transform: scale(1.05);
+.logoWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.logoText {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.3px;
 }
 
 .title {
     margin-top: 0 !important;
-    margin-bottom: 8px !important;
-    font-weight: 700 !important;
+    margin-bottom: 12px !important;
+    font-weight: 600 !important;
+    font-size: 24px !important;
+    color: #1a1a1a !important;
     letter-spacing: -0.5px;
+}
+
+.subtitle {
+    font-size: 15px !important;
+    color: #86868b !important;
+    line-height: 1.5;
+}
+
+.form :global(.ant-form-item) {
+    margin-bottom: 18px;
 }
 
 .form :global(.ant-form-item-label > label) {
     font-weight: 500;
-    color: #374151;
+    font-size: 14px;
+    color: #1a1a1a;
 }
 
 .input {
-    border-radius: 8px !important;
-    border-color: #e5e7eb !important;
+    height: 48px !important;
+    border-radius: 12px !important;
+    border: 1px solid #eef0f2 !important;
+    background: #fcfcfd !important;
+    font-size: 15px !important;
+    padding: 0 16px !important;
+    transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1) !important;
 }
 
-.input:hover, .input:focus {
-    border-color: #1677ff !important;
+.input:hover {
+    border-color: #d1d5db !important;
+    background: #ffffff !important;
+}
+
+.input:focus,
+.input:global(.ant-input-focused) {
+    border-color: #1a1a1a !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08) !important;
+}
+
+/* 密码输入框特殊处理 */
+.input:global(.ant-input-password) {
+    padding: 0 !important;
+}
+
+.input:global(.ant-input-password) input {
+    height: 46px !important;
+    padding: 0 16px !important;
+    background: transparent !important;
 }
 
 .buttonItem {
-    margin-top: 8px;
+    margin-top: 28px;
     margin-bottom: 0;
 }
 
 .submitBtn {
-    height: 48px !important;
-    border-radius: 8px !important;
+    height: 52px !important;
+    border-radius: 12px !important;
     font-weight: 600 !important;
+    font-size: 16px !important;
+    background: #1a1a1a !important;
     border: none !important;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
 }
 
 .submitBtn:hover {
-    background: #374151 !important;
-    transform: translateY(-1px);
+    background: #333333 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16) !important;
+}
+
+.submitBtn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
 }
 
 .submitBtn:global(.ant-btn-loading) {
-    background: #374151 !important;
-    opacity: 0.8;
+    background: #333333 !important;
+    opacity: 0.9;
+}
+
+.loginLink {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.loginLink span {
+    font-size: 14px;
+    color: #86868b;
+}
+
+.loginLink a {
+    color: #1a1a1a;
+    font-weight: 500;
+    text-decoration: none;
+    margin-left: 4px;
+    transition: color 0.2s ease;
+    cursor: pointer;
+}
+
+.loginLink a:hover {
+    color: #5e5e66;
 }
 
 .footer {
-    margin-top: 32px;
+    margin-top: 36px;
     text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid #eef0f2;
 }
 
 .footerText {
     font-size: 12px !important;
-    color: #9ca3af !important;
+    color: #86868b !important;
+}
+
+/* 成功状态样式 */
+.successWrapper {
+    text-align: center;
+    padding: 60px 0;
+}
+
+.successIcon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 24px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 32px;
+}
+
+.successTitle {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.successSubtitle {
+    font-size: 15px;
+    color: #86868b;
 }
