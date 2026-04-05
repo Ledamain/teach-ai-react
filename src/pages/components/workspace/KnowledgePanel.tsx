@@ -19,8 +19,6 @@ import {
   InboxOutlined
 } from '@ant-design/icons';
 import {
-  createKnowledgeFolder,
-  renameKnowledgeFolder,
   deleteKnowledgeFolder,
 } from '@/api/repo/index';
 import KnowLedgeApi from '@/api/repo/index'
@@ -44,7 +42,7 @@ const { TextArea } = Input;
 const { Dragger } = Upload;
 
 interface KnowledgePanelProps {
-  courseId: string;
+  courseId: number;
 }
 
 // 根据文件类型获取图标

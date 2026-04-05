@@ -9,4 +9,12 @@ export default {
     createRepoCategory(data: RepoCategoryParams) {
         return request.post<number>('/repo-category/create', data);
     },
+
+    /**
+     * 修改学科
+     * @param data 参数
+     */
+    updateRepoCategory(data: RepoCategoryParams) {
+        return request.post<number>('/repo-category/update', data);
+    },
 }

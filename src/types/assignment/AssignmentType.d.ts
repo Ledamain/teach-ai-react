@@ -1,8 +1,11 @@
 
 // 作业练习类型
 export interface Assignment {
-    id: string;
-    title: string;
+    id: number;
+    repoCategoryId: number;
+    teacherUserId: number;
+    classesId: number;
+    exerciseName: string;
     description?: string;
     startDate?: string;
     dueDate: string;

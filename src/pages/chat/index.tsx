@@ -39,7 +39,7 @@ import {
     Divider,
     message, Button,
     Typography, UploadProps, Upload, UploadFile,
-    Collapse, Switch, Spin,Tag,Modal
+    Collapse, Switch, Spin, Tag, Modal, Tooltip
 } from 'antd';
 import {css, Global} from '@emotion/react';
 import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
@@ -60,7 +60,9 @@ import WorkspaceModal from "./WorkspaceModal"
 // ========================
 import PptGeneratePage from '@/pages/ppt/index';
 import {Workspace} from "@/pages/components/workspace";
-import {Course} from "@/types/workspace/WorkspaceType"; // ← 按你实际的 PPT 页面路径调整
+import {Course} from "@/types/workspace/WorkspaceType";
+import {KnowledgeCategory, KnowLedgeCourseParams} from "@/types/repo/RepoType";
+import {StudentWorkspace} from "@/pages/components/student-workspace"; // ← 按你实际的 PPT 页面路径调整
 
 export type ChatChunkCallback = (chunk: string, isFinal: boolean) => void;
 
@@ -70,6 +72,9 @@ type MessageRole = 'user' | 'assistant';
 // 视图类型：聊天 or PPT
 // ========================
 type CurrentView = 'chat' | 'ppt';
+
+// 用户角色类型
+type UserRole = 'teacher' | 'student';
 
 interface ChatMessage {
     id: string;
@@ -432,6 +437,9 @@ const Chat: React.FC = () => {
     const [workspaceVisible, setWorkspaceVisible] = useState(false);
     const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
+    // 用户角色状态（用于演示切换）
+    const [userRole, setUserRole] = useState<UserRole>('student');
+
     // 打开课程弹窗
     const openWorkspaceModal = () => {
         setWorkspaceVisible(true);
@@ -720,6 +728,13 @@ const Chat: React.FC = () => {
     useEffect(() => {
         if (mounted) fetchHistoryList();
     }, [mounted, fetchHistoryList]);
+    useEffect(() => {
+        if (getUserClientRole() === '0'){
+            setUserRole('student')
+        }else if (getUserClientRole() === '1'){
+            setUserRole('teacher')
+        }
+    },[userRole])
 
     const scrollToBottom = useCallback((behavior: ScrollBehavior = 'smooth') => {
         if (messagesScrollContainerRef.current) {
@@ -835,10 +850,10 @@ const Chat: React.FC = () => {
         {
             key: '1',
             label: (
-                <div>
+                <div onClick={inSettings}>
                     <div className={styles.userLabel}>
                         <SettingOutlined/>
-                        <span onClick={inSettings}>个人设置</span>
+                        <span>个人设置</span>
                     </div>
                     <Divider size='small'/>
                 </div>
@@ -847,10 +862,10 @@ const Chat: React.FC = () => {
         {
             key: '2',
             label: (
-                <div>
+                <div onClick={logout}>
                     <div className={styles.userLabel}>
                         <LogoutOutlined/>
-                        <span onClick={logout}>退出登录</span>
+                        <span>退出登录</span>
                     </div>
                     <Divider size='small'/>
                 </div>
@@ -1033,8 +1048,8 @@ const Chat: React.FC = () => {
             .trim();
 
         navigator.clipboard.writeText(cleanContent)
-            .then(() => Message.success('Copied to clipboard!'))
-            .catch(() => Message.error('Failed to copy content'));
+            .then(() => Message.success('复制成功!'))
+            .catch(() => Message.error('复制失败!'));
     }, [messagesMap, activeKey]);
 
     const currentMessages = messagesMap[activeKey] || [];
@@ -1105,7 +1120,16 @@ const Chat: React.FC = () => {
                             <div className={styles.logoWrapper}>
                                 <Image src={logoImage} className={styles.logo} width={56} height={56} alt="logo"/>
                                 <span className={styles.logoText}>教学辅助平台</span>
-                                {getUserClientRole() === "1" && <Button icon={<AppstoreOutlined />} onClick={openWorkspace} />}
+                                {getUserClientRole() === "1" &&
+                                    <Tooltip title='进入工作台'>
+                                        <Button icon={<AppstoreOutlined />} onClick={openWorkspace} />
+                                    </Tooltip>
+                                }
+                                {getUserClientRole() === "0" &&
+                                    <Tooltip title='进入学习台'>
+                                        <Button icon={<AppstoreOutlined />} onClick={openWorkspace} />
+                                    </Tooltip>
+                                }
                             </div>
 
                             <div className={styles.convContainer}>
@@ -1219,7 +1243,15 @@ const Chat: React.FC = () => {
                                 exit="exit"
                                 style={{ width: '100%', height: '100%', background: '#F5F7FA' }}
                             >
-                                <Workspace onBack={backToChatSystem} logoImage={logoImage} />
+                                {userRole === 'teacher' ? (
+                                    <Workspace onBack={backToChatSystem} logoImage={logoImage} />
+                                ) : (
+                                    <StudentWorkspace
+                                        onBack={backToChatSystem}
+                                        logoImage={logoImage}
+                                        studentId={getUserId()}
+                                    />
+                                )}
                             </motion.div>
                         )}
 

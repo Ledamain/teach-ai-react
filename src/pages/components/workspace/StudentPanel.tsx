@@ -40,14 +40,15 @@ import {
   AreaChart,
 } from 'recharts';
 import {
-  getClassList,
   addStudent,
   deleteStudents,
   getStudentDetail
 } from '@/api/workspace/courseDetail';
 import CourseDetailApi from '@/api/workspace/courseDetail'
+import ClassesApi from '@/api/classes/index'
 import type { Student, ClassInfo, StudentDetail } from '@/types/workspace/CourseDetailType';
 import styles from '@/styles/workspace/courseDetail.module.css';
+import {CLassesType} from "@/types/classes/ClassesType";
 
 interface StudentPanelProps {
   courseId: string;
@@ -57,7 +58,7 @@ const COLORS = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
 
 const StudentPanel: React.FC<StudentPanelProps> = ({ courseId }) => {
   const [students, setStudents] = useState<Student[]>([]);
-  const [classes, setClasses] = useState<ClassInfo[]>([]);
+  const [classes, setClasses] = useState<CLassesType[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
   const [selectedClass, setSelectedClass] = useState<string | undefined>();
@@ -86,7 +87,7 @@ const StudentPanel: React.FC<StudentPanelProps> = ({ courseId }) => {
 
   const fetchClasses = useCallback(async () => {
     try {
-      const result = await getClassList(courseId);
+      const result = await ClassesApi.getClassesListByRepoCategoryId(Number(courseId));
       setClasses(result);
     } catch (error) {
       console.error('获取班级列表失败:', error);
@@ -211,7 +212,7 @@ const StudentPanel: React.FC<StudentPanelProps> = ({ courseId }) => {
           placeholder="按班级筛选"
           allowClear
           onChange={handleClassChange}
-          options={classes.map(c => ({ label: c.name, value: c.name }))}
+          options={classes.map(c => ({ label: c.classesName, value: c.classesName }))}
         />
         <Checkbox
           checked={selectedIds.length === students.length && students.length > 0}
@@ -341,7 +342,7 @@ const StudentPanel: React.FC<StudentPanelProps> = ({ courseId }) => {
           >
             <Select
               placeholder="请选择班级"
-              options={classes.map(c => ({ label: c.name, value: c.name }))}
+              options={classes.map(c => ({ label: c.classesName, value: c.id }))}
             />
           </Form.Item>
           <Form.Item>

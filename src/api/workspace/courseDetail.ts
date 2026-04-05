@@ -380,7 +380,6 @@ export default {
     });
   },
 
-// 👇 把箭头函数改为普通函数，修复 this 指向
   async getStudentListForClient(
       courseId: number | null,
       params?: {

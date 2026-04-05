@@ -14,7 +14,7 @@ interface KnowLedgeCourseParams {
 
 // 知识库文件夹类型
 export interface KnowledgeFolder {
-    id: string;
+    id: number;
     repoGroupName: string;
     repoGroupDescription?: string;
     fileCount: number;

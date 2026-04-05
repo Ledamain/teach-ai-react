@@ -1,6 +1,10 @@
 
 // ==================== 作业练习相关 API ====================
 
+import {Assignment, AssignmentDetail, StudentSubmission, SubmissionListItem} from "@/types/assignment/AssignmentType";
+import {request} from "@/utils/request";
+import {CLassesType} from "@/types/classes/ClassesType";
+
 /**
  * 获取作业列表
  * @param courseId 课程ID
@@ -277,3 +281,14 @@ export const getStudentSubmission = async (
         ]
     };
 };
+
+export default {
+    /**
+     * 创建作业
+     * @param courseId 课程ID
+     * @param assignmentData 作业数据
+     */
+    createAssignment(data: Omit<Assignment, 'id' | 'submissionCount'>) {
+        return request.post<CLassesType[]>('/classes/list-by-repo-category',data);
+    },
+}

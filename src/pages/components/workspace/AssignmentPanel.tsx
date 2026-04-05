@@ -92,6 +92,11 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
   const [studentSubmission, setStudentSubmission] = useState<StudentSubmission | null>(null);
   const [studentDetailLoading, setStudentDetailLoading] = useState(false);
 
+  // 搜索筛选状态
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchClass, setSearchClass] = useState<string | undefined>();
+  const [searchStatus, setSearchStatus] = useState<string | undefined>();
+
   const fetchAssignments = useCallback(async () => {
     try {
       setLoading(true);
@@ -127,8 +132,9 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
     try {
       setSubmitLoading(true);
       const [startDate, endDate] = values.dateRange;
-      await createAssignment(courseId, {
-        title: values.title,
+      await createAssignment({
+        exerciseName: values.title,
+        repoCategoryId: courseId,
         description: values.description,
         dueDate: endDate.format('YYYY-MM-DD HH:mm'),
         startDate: startDate.format('YYYY-MM-DD HH:mm'),
@@ -181,6 +187,27 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
     }
   };
 
+  // 筛选逻辑
+  const filteredSubmissions = submissionList.filter(item => {
+    // 姓名/学号搜索
+    const matchKeyword =
+        searchKeyword === '' ||
+        item.studentName.includes(searchKeyword) ||
+        item.studentId.includes(searchKeyword);
+
+    // 班级筛选
+    const matchClass =
+        !searchClass ||
+        item.className === searchClass;
+
+    // 状态筛选
+    const matchStatus =
+        !searchStatus ||
+        item.submitStatus === searchStatus;
+
+    return matchKeyword && matchClass && matchStatus;
+  });
+
   // 打开发布弹窗
   const handleOpenPublish = () => {
     setPublishModalVisible(true);
@@ -214,7 +241,12 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
   // 查看作答情况
   const handleViewSubmissions = async () => {
     if (!currentAssignment) return;
-    
+
+    // 重置搜索条件
+    setSearchKeyword('');
+    setSearchClass(undefined);
+    setSearchStatus(undefined);
+
     setSubmissionLoading(true);
     setSubmissionModalVisible(true);
     
@@ -758,67 +790,146 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
 
       {/* 作答情况弹窗 */}
       <Modal
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <TeamOutlined />
-            <span>作答情况 - {currentAssignment?.title}</span>
-          </div>
-        }
-        open={submissionModalVisible}
-        onCancel={() => {
-          setSubmissionModalVisible(false);
-          setSubmissionList([]);
-        }}
-        footer={null}
-        width={900}
-        centered
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <TeamOutlined />
+              <span>作答情况 - {currentAssignment?.title}</span>
+            </div>
+          }
+          open={submissionModalVisible}
+          onCancel={() => {
+            setSubmissionModalVisible(false);
+            setSubmissionList([]);
+          }}
+          footer={null}
+          width={900}
+          centered
+          style={{ height: '70vh' }}
+          styles={{
+            body: {
+              height: 'calc(70vh - 60px)',
+              overflowY: 'auto',
+              padding: '16px 24px'
+            }
+          }}
       >
         {submissionLoading ? (
-          <div style={{ textAlign: 'center', padding: 60 }}>加载中...</div>
+            <div style={{ textAlign: 'center', padding: 60 }}>加载中...</div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.25 }}
-          >
-            {/* 统计信息 */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(3, 1fr)', 
-              gap: 16, 
-              marginBottom: 20,
-              padding: 16,
-              background: '#f7f7f8',
-              borderRadius: 12
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 600, color: '#1a1a1a' }}>
-                  {submissionList.length}
+            <>
+              {/* 统计信息 + 搜索筛选 */}
+              <div style={{ marginBottom: 20 }}>
+                {/* 统计卡片 */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: 16,
+                  marginBottom: 16,
+                  padding: 16,
+                  background: '#f7f7f8',
+                  borderRadius: 12
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: '#1a1a1a' }}>
+                      {submissionList.length}
+                    </div>
+                    <div style={{ fontSize: 13, color: '#86868b' }}>总人数</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: '#22c55e' }}>
+                      {submissionList.filter(s => s.submitStatus === 'completed').length}
+                    </div>
+                    <div style={{ fontSize: 13, color: '#86868b' }}>已提交</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: '#ef4444' }}>
+                      {submissionList.filter(s => s.submitStatus === 'not_submitted').length}
+                    </div>
+                    <div style={{ fontSize: 13, color: '#86868b' }}>未提交</div>
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, color: '#86868b' }}>总人数</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 600, color: '#22c55e' }}>
-                  {submissionList.filter(s => s.submitStatus === 'completed').length}
+
+                {/* 搜索筛选栏 */}
+                <div style={{
+                  display: 'flex',
+                  gap: 12,
+                  flexWrap: 'wrap',
+                  padding: 12,
+                  background: '#f7f7f8',
+                  borderRadius: 12
+                }}>
+                  <Input
+                      placeholder="搜索学生姓名/学号"
+                      allowClear
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      style={{ width: 200 }}
+                  />
+                  <Select
+                      placeholder="按班级筛选"
+                      allowClear
+                      value={searchClass}
+                      onChange={(val) => setSearchClass(val)}
+                      style={{ width: 180 }}
+                      options={Array.from(new Set(submissionList.map(item => item.className))).map(name => ({
+                        label: name,
+                        value: name
+                      }))}
+                  />
+                  <Select
+                      placeholder="按提交状态筛选"
+                      allowClear
+                      value={searchStatus}
+                      onChange={(val) => setSearchStatus(val)}
+                      style={{ width: 150 }}
+                      options={[
+                        { label: '已提交', value: 'completed' },
+                        { label: '未提交', value: 'not_submitted' }
+                      ]}
+                  />
                 </div>
-                <div style={{ fontSize: 13, color: '#86868b' }}>已提交</div>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 24, fontWeight: 600, color: '#ef4444' }}>
-                  {submissionList.filter(s => s.submitStatus === 'not_submitted').length}
-                </div>
-                <div style={{ fontSize: 13, color: '#86868b' }}>未提交</div>
-              </div>
-            </div>
-            
-            <Table
-              dataSource={submissionList}
-              columns={submissionColumns}
-              rowKey="studentId"
-              pagination={false}
-              size="middle"
-            />
-          </motion.div>
+
+              {/* ✅ 筛选逻辑 */}
+              {(() => {
+                const filteredSubmissions = submissionList.filter(item => {
+                  const matchKeyword = !searchKeyword ||
+                      item.studentName.includes(searchKeyword) ||
+                      item.studentId.includes(searchKeyword);
+                  const matchClass = !searchClass || item.className === searchClass;
+                  const matchStatus = !searchStatus || item.submitStatus === searchStatus;
+                  return matchKeyword && matchClass && matchStatus;
+                });
+
+                return (
+                    // ✅ 筛选动画（和你给的学生页面完全一样的动画）
+                    <AnimatePresence mode="popLayout">
+                      <motion.div
+                          key={`${searchKeyword}-${searchClass}-${searchStatus}`}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.25 }}
+                      >
+                        <Table
+                            dataSource={filteredSubmissions}
+                            columns={submissionColumns}
+                            rowKey="studentId"
+                            pagination={false}
+                            size="middle"
+                        />
+
+                        {/* 空数据提示 */}
+                        {filteredSubmissions.length === 0 && (
+                            <div style={{ textAlign: 'center', padding: 40, color: '#86868b' }}>
+                              没有匹配的学生记录
+                            </div>
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
+                );
+              })()}
+            </>
         )}
       </Modal>
 

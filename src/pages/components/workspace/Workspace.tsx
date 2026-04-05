@@ -201,7 +201,7 @@ const Workspace: React.FC<WorkspaceProps> = ({ onBack, logoImage = '/placeholder
       const teacherUserId = getUserId();
       const submit = {
         ...values,
-        teacherUserId: teacherUserId,
+        teacherUserId: teacherUserId ?? 0,
       }
       if (modalMode === 'create') {
         const res = await RepoCategoryApi.createRepoCategory(submit);
@@ -214,17 +214,18 @@ const Workspace: React.FC<WorkspaceProps> = ({ onBack, logoImage = '/placeholder
         }
       } else {
         if (!editingCourse) return;
-        const res = await updateCourse({
-          id: editingCourse.id,
-          ...values,
-        });
-        if (res.code === 200) {
-          message.success('修改成功');
-          setModalVisible(false);
-          fetchCourses();
-        } else {
-          throw new Error(res.message || '修改失败');
+        const updateSubmit = {
+          ...submit,
+          id: editingCourse.id
         }
+        const res = await RepoCategoryApi.updateRepoCategory(updateSubmit);
+          try {
+            message.success('修改成功');
+            setModalVisible(false);
+            fetchCourses();
+          }catch (error){
+            message.error('修改失败');
+          }
       }
     } catch (error) {
       if (error instanceof Error) {

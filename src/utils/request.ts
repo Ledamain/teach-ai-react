@@ -46,12 +46,17 @@ service.interceptors.response.use(
             return res.data || res;
         } else {
             // 改为后端的msg字段取提示
-            message.error(res.msg || '请求失败');
-            return Promise.reject(new Error(res.msg || '请求失败'));
+            return message.error(res.msg || '请求失败');
         }
     },
-    (error: AxiosError): Promise<never> => {
+    (error: AxiosError): Promise<never> | null => {
         console.error('响应错误:', error);
+
+        if (axios.isAxiosError(error) && error.code === 'ECONNABORTED') {
+            message.error('请求超时，请稍后重试');
+            return null;
+        }
+
         const showError = (txt: string) => message.error(txt, 3);
 
         if (error.response) {
@@ -90,7 +95,7 @@ service.interceptors.response.use(
             message.error(error.message || '请求配置错误')
         }
 
-        return Promise.reject(error);
+        return null;
     }
 );
 
