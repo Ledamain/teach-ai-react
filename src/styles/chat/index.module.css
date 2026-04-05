@@ -296,7 +296,7 @@
 /* 气泡消息样式优化 - OpenAI 风格 + 固定宽度 */
 :global(.ant-bubble) {
     transition: all 0.25s ease;
-    max-width: 94% !important;  /* ← 改为 100% */
+    max-width: calc(100% - 48px) !important;  /* ← 改为 100% */
     width: 100% !important;      /* ← 改为 100% */
     box-sizing: border-box !important;
 }
