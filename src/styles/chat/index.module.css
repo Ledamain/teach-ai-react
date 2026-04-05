@@ -175,8 +175,8 @@
     min-height: 0;
 
     /* 新增：强制约束子元素不超出容器 */
-    overflow: hidden !important;
-    position: relative;
+    /*overflow: hidden !important;*/
+    /*position: relative;*/
 }
 
 .senderWrapper {
@@ -296,9 +296,9 @@
 /* 气泡消息样式优化 - OpenAI 风格 + 固定宽度 */
 :global(.ant-bubble) {
     transition: all 0.25s ease;
-    /* 强制最大宽度，不会被内容撑开 */
-    max-width: 94% !important;
-    width: auto !important;
+    max-width: calc(100% - 48px) !important;  /* ← 改为 100% */
+    width: 100% !important;      /* ← 改为 100% */
+    box-sizing: border-box !important;
 }
 
 :global(.ant-bubble-content) {

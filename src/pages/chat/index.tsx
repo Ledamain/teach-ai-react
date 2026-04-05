@@ -1311,7 +1311,12 @@ const Chat: React.FC = () => {
                                                                         variants={msg.isHistorical ? historicalMsgVariants : newMsgVariants}
                                                                         initial="hidden"
                                                                         animate="visible"
-                                                                        style={{marginBottom: 12}}
+                                                                        style={{
+                                                                            marginBottom: 12,
+                                                                            width: '100%',
+                                                                            display: 'flex',
+                                                                            justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                                                                        }}
                                                                     >
                                                                         <Bubble
                                                                             placement={msg.role === 'user' ? 'end' : 'start'}
