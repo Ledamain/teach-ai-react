@@ -20,6 +20,12 @@ export interface PptOutlineChunk {
     text?: string;
 }
 
+export interface PptQuery {
+    query: string;
+    fileName: string;
+    pptMemoryId: string
+}
+
 /**
  * 流式生成 PPT 大纲
  * @param query        - PPT 主题
@@ -27,7 +33,7 @@ export interface PptOutlineChunk {
  * @param signal       - AbortSignal，用于取消请求
  */
 export async function streamPptOutline(
-    query: string,
+    query: PptQuery,
     onChunk: (data: PptOutlineChunk, isFinal: boolean) => void,
     signal?: AbortSignal
 ): Promise<void> {
@@ -40,15 +46,17 @@ export async function streamPptOutline(
 
     const token = getToken();
     const url = getApiUrl(
-        `/client-api/client-system/ppt/runPptOutlineGeneration?query=${encodeURIComponent(query)}`
+        `/client-api/client-system/ppt/runPptOutlineGeneration`
     );
 
     const response = await fetch(url, {
-        method: 'GET',
+        method: 'POST',
         headers: {
             'Accept': 'text/event-stream',
+            'Content-Type': 'application/json',
             ...(token ? { 'Client-Authorization': token } : {}),
         },
+        body: JSON.stringify(query),
         signal: controller.signal,
     });
 

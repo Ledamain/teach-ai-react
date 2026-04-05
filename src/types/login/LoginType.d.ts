@@ -7,6 +7,7 @@ export interface LoginResult {
         nickname: string;
         clientUsername: string;
         clientAvator?: string;
+        clientRole: string;
     };
     msg?: string;
     code: number;
@@ -33,4 +34,5 @@ export interface UserInfo {
     nickname: string;
     clientUsername: string;
     clientAvator?: string;
+    clientRole: string;
 }

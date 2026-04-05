@@ -75,7 +75,7 @@
 
 /* 选中状态 - 高级柔和蓝 */
 .convScrollInner :global(.ant-conversations-list .ant-conversations-item.ant-conversations-item-active) {
-    background-color: #eef2ff !important;
+    background-color: #eff2ff !important;
     border-radius: 10px !important;
 }
 
@@ -182,7 +182,7 @@
 .senderWrapper {
     flex-shrink: 0;
     width: 100%;
-    max-width: 50%;
+    max-width: 60%;
     margin: 0 auto;
     padding: 16px 24px 32px;
 }
@@ -223,7 +223,7 @@
     gap: 10px;
     cursor: pointer;
     width: 100%;
-    padding: 8px 10px;
+    padding: 8px 1px;
     border-radius: 10px;
     transition: all 0.2s ease;
 }

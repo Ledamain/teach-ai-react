@@ -1,13 +1,13 @@
 'use client';
 
-import React, {useState, useRef, useCallback, useEffect} from 'react';
+import React, {useState, useRef, useCallback, useEffect, useMemo} from 'react';
 import {
     Button,
     Input,
     Tag,
     Typography,
     message,
-    Modal,
+    Modal, UploadProps, UploadFile, Flex, Upload, theme,
 } from 'antd';
 import {
     ThunderboltOutlined,
@@ -15,7 +15,7 @@ import {
     LeftOutlined,
     ReloadOutlined,
     HolderOutlined,
-    ArrowRightOutlined,
+    ArrowRightOutlined, CloudUploadOutlined, UploadOutlined, PaperClipOutlined,
 } from '@ant-design/icons';
 import {Sender} from '@ant-design/x';
 import {motion, AnimatePresence, Reorder} from 'framer-motion';
@@ -23,7 +23,7 @@ import {flushSync} from 'react-dom';
 import styles from '@/styles/ppt/index.module.css';
 
 import pptApi from '@/api/ppt';
-import {streamPptOutline} from '@/api/ppt/streamPptOutline';
+import {PptQuery, streamPptOutline} from '@/api/ppt/streamPptOutline';
 
 const {Text} = Typography;
 
@@ -77,7 +77,28 @@ function toMarkdown(nodes: OutlineNode[]): string {
     return nodes.map((n) => `${'#'.repeat(n.level + 1)} ${n.content}`).join('\n');
 }
 
+const generatePptMemoryId = (): string => {
+    if (typeof window === 'undefined') return `ppt-memory-${Date.now()}`;
+    const userInfoStr = window.localStorage.getItem('userInfo');
+    if (!userInfoStr) throw new Error('用户信息不存在，请先登录');
+    const userInfo: any = JSON.parse(userInfoStr);
+    return '用户' + userInfo.id + '_PPT_' + Date.now().toString();
+};
+
+const getUserId = (): string | null => {
+    if (typeof window === 'undefined') return null;
+    const userInfoStr = window.localStorage.getItem('userInfo');
+    if (!userInfoStr) return null;
+    try {
+        const userInfo: any = JSON.parse(userInfoStr);
+        return String(userInfo.id);
+    } catch {
+        return null;
+    }
+};
+
 export default function PptGeneratePage() {
+
     const [title, setTitle] = useState('');
     const [outlineNodes, setOutlineNodes] = useState<OutlineNode[]>([]);
     const [sseStatus, setSseStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
@@ -99,6 +120,18 @@ export default function PptGeneratePage() {
     const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const abortCtrlRef = useRef<AbortController | null>(null);
 
+    const [fileList, setFileList] = useState<UploadFile[]>([]);
+
+    const [open, setOpen] = React.useState(false);
+
+    const {token} = theme.useToken();
+
+    const [fileName, setFileName] = useState('');
+
+    const pptMemoryIdRef = useRef<string>('');
+
+
+
     useEffect(() => {
         const G = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (G) SpeechRecognitionRef.current = G;
@@ -113,6 +146,83 @@ export default function PptGeneratePage() {
         document.body.appendChild(script);
         return () => { script.remove(); };
     }, []);
+
+    useEffect(() => {
+        if (!pptMemoryIdRef.current) {
+            try {
+                const memoryId = generatePptMemoryId();
+                pptMemoryIdRef.current = memoryId;
+                console.log('PPT 记忆 ID 已生成：', memoryId);
+            } catch (err) {
+                message.error('用户未登录，无法生成记忆上下文');
+            }
+        }
+    }, []);
+
+
+    const uploadProps: UploadProps = useMemo(() => ({
+        name: 'file',
+        action: `${process.env.NEXT_PUBLIC_API_URL_LOC}/admin-api/infra/file/upload`,
+        headers: {
+            fileflag: `authorization-PPT_FILE_UPLOAD-${encodeURIComponent(pptMemoryIdRef.current)}`,
+        },
+        fileList,
+        limit: 1, // 限制1个文件
+        beforeUpload: (file, fileList) => {
+            if (fileList.length > 1) {
+                message.warning('仅支持上传一个文件！');
+                return false;
+            }
+            return true;
+        },
+        onChange(info) {
+            // 自动只保留最后一个文件，确保永远只有一个
+            setFileList(info.fileList.slice(-1));
+            if (info.file.status !== 'uploading') {
+                console.log(info.file, info.fileList);
+            }
+            if (info.file.status === 'done') {
+                message.success(`${info.file.name} 文件上传成功`);
+                const fileName = info.file.name || '';
+                setFileName(fileName);
+            } else if (info.file.status === 'error') {
+                message.error(`${info.file.name} 文件上传失败`);
+            }
+        },
+    }), [fileList]);
+
+    const headerNode = (
+        <div style={{
+            position: 'absolute',
+            top: -10,
+            left: 0,
+            right: 0,
+            zIndex: 999,
+            background: '#fff',
+            borderRadius: 16,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+            transform: 'translateY(-100%)'
+        }}>
+        <Sender.Header title="附件上传" open={open} onOpenChange={setOpen}>
+            <Flex vertical align="center" gap="small" style={{ marginBlock: token.paddingLG }}>
+                <CloudUploadOutlined style={{ fontSize: '4em' }} />
+                <Typography.Title level={5} style={{ margin: 0 }}>
+                    拖拽文件到此处
+                </Typography.Title>
+                <Typography.Text type="secondary">
+                    支持 pdf, doc, xlsx, ppt, txt, 图片等文件类型
+                </Typography.Text>
+                <Upload {...uploadProps}  fileList={fileList}>
+                    <Button
+                        icon={<UploadOutlined />}
+                    >
+                        点击上传
+                    </Button>
+                </Upload>
+            </Flex>
+        </Sender.Header>
+        </div>
+    );
 
     const handleRecordingChange = (nextRecording: boolean) => {
         if (!SpeechRecognitionRef.current) { message.error('当前浏览器不支持语音识别'); return; }
@@ -151,6 +261,7 @@ export default function PptGeneratePage() {
         const abort = new AbortController();
         abortCtrlRef.current = abort;
 
+
         try {
             const mockOutlineText = `# ${title}
 ## 第一章 概述
@@ -173,15 +284,21 @@ export default function PptGeneratePage() {
                 flushSync(() => { setOutlineNodes([...nodes]); });
             }
             taskIdRef.current = 'task-' + Date.now();
-            setSseStatus('done');
+            // setSseStatus('done');
         } catch (err: any) {
             setSseStatus('error');
-            message.error(`生成失败：${err.message}`);
+
+        }
+
+        const pptQuery : PptQuery = {
+            query: title,
+            fileName: fileName,
+            pptMemoryId: pptMemoryIdRef.current,
         }
 
         try {
             await streamPptOutline(
-                title,
+                pptQuery,
                 async (data, isFinal) => {
                     if (!isFinal) {
                         if (data.taskId) taskIdRef.current = data.taskId;
@@ -193,13 +310,14 @@ export default function PptGeneratePage() {
                     } else {
                         if (data.taskId) taskIdRef.current = data.taskId;
                         flushSync(() => { setSseStatus('done'); });
+
                     }
                 },
                 abort.signal,
             );
         } catch (err: any) {
             setSseStatus('error');
-            message.error(`连接错误：${err.message}`);
+
         }
     }, [title]);
 
@@ -255,6 +373,7 @@ export default function PptGeneratePage() {
                         if (taskIdRef.current && pptArtifactIdRef.current) {
                             pptApi.bindPptArtifact({taskId: taskIdRef.current, artifactId: pptArtifactIdRef.current});
                         }
+                        exportPptArtifact()
                     }
                 },
             });
@@ -280,7 +399,7 @@ export default function PptGeneratePage() {
 
         try {
             const resp: any = await pptApi.exportPptArtifact({artifactId: pptArtifactIdRef.current});
-            const exportTaskId = resp.data?.exportTaskId;
+            const exportTaskId = resp?.exportTaskId;
             if (!exportTaskId) { setExportMsg({text: '导出任务创建失败'}); return; }
             let count = 0;
             if (pollTimerRef.current) clearInterval(pollTimerRef.current);
@@ -288,7 +407,7 @@ export default function PptGeneratePage() {
                 count++;
                 try {
                     const result: any = await pptApi.getPptArtifactExportResult({exportTaskId});
-                    const links = result.data?.exportFileLink;
+                    const links = result?.exportFileLink;
                     if (links?.length) {
                         clearInterval(pollTimerRef.current!);
                         setExportMsg({text: '导出完成', link: links[0]});
@@ -344,10 +463,9 @@ export default function PptGeneratePage() {
                         animate="animate"
                         exit={{opacity: 0, transition: {duration: 0.3}}}
                     >
-                        {/* ── 顶部固定：输入框 ── */}
+                        {/* ========== 1. 顶部固定：输入框 ========== */}
                         <motion.div
                             className={`${styles.inputSection} ${isInputMoved ? styles.inputSectionTop : styles.inputSectionCenter}`}
-                            layout
                         >
                             <div className={styles.inputWrapper}>
                                 {!isInputMoved && (
@@ -363,6 +481,17 @@ export default function PptGeneratePage() {
                                 )}
                                 <div className={styles.senderWrapper}>
                                     <Sender
+                                        header={headerNode}
+                                        prefix={
+                                            <Button
+                                                type="text"
+                                                style={{ fontSize: 16 }}
+                                                icon={<PaperClipOutlined />}
+                                                onClick={() => {
+                                                    setOpen(!open);
+                                                }}
+                                            />
+                                        }
                                         value={title}
                                         onChange={setTitle}
                                         onSubmit={runPptOutlineGeneration}
@@ -385,9 +514,8 @@ export default function PptGeneratePage() {
                             </div>
                         </motion.div>
 
-                        {/* ── 中间区域：加载动画 / 大纲列表（flex:1 + overflow hidden） ── */}
-                        <div className={styles.middleSection}>
-                            {/* 加载中 */}
+                        {/* ========== 2. 中间唯一滚动区域：大纲预览 ========== */}
+                        <div className={styles.middleScrollSection}>
                             <AnimatePresence>
                                 {sseStatus === 'loading' && outlineNodes.length === 0 && (
                                     <motion.div
@@ -404,7 +532,6 @@ export default function PptGeneratePage() {
                                 )}
                             </AnimatePresence>
 
-                            {/* 大纲列表 */}
                             <AnimatePresence>
                                 {outlineNodes.length > 0 && (
                                     <motion.div
@@ -415,21 +542,52 @@ export default function PptGeneratePage() {
                                         exit={{opacity: 0, y: -20}}
                                     >
                                         <div className={styles.outlineHeader}>
-                                            <span className={styles.outlineTitle}>
-                                                <FileTextOutlined style={{marginRight: 8}}/>
-                                                大纲预览
-                                            </span>
-                                            <Button
-                                                icon={<ReloadOutlined/>}
-                                                onClick={runPptOutlineGeneration}
-                                                disabled={sseStatus === 'loading'}
-                                                type="text"
-                                            >
-                                                重新生成
-                                            </Button>
+                                          <span className={styles.outlineTitle}>
+                                            <FileTextOutlined style={{marginRight: 8}}/>
+                                            大纲预览
+                                          </span>
+
+                                            {/* 生成中：显示提示，隐藏按钮 */}
+                                            {sseStatus === 'loading' && (
+                                                <Typography.Text type="secondary" style={{ fontSize: '14px' }}>
+                                                    正在生成大纲中...
+                                                </Typography.Text>
+                                            )}
+
+                                            {/* 生成完成：显示成功提示 + 重新生成按钮 */}
+                                            {sseStatus === 'done' && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                    <Typography.Text type="success" style={{ fontSize: '14px' }}>
+                                                        大纲生成完毕
+                                                    </Typography.Text>
+                                                    <Button
+                                                        icon={<ReloadOutlined />}
+                                                        onClick={runPptOutlineGeneration}
+                                                        type="text"
+                                                    >
+                                                        重新生成
+                                                    </Button>
+                                                </div>
+                                            )}
+
+                                            {/* 生成失败：显示失败提示 + 重新生成按钮 */}
+                                            {sseStatus === 'error' && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                                    <Typography.Text type="danger" style={{ fontSize: '14px' }}>
+                                                        大纲生成失败
+                                                    </Typography.Text>
+                                                    <Button
+                                                        icon={<ReloadOutlined />}
+                                                        onClick={runPptOutlineGeneration}
+                                                        type="text"
+                                                    >
+                                                        重新生成
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* 只有这里滚动 */}
+                                        {/* 唯一滚动容器 */}
                                         <div className={styles.outlineContent}>
                                             <Reorder.Group
                                                 axis="y"
@@ -483,7 +641,7 @@ export default function PptGeneratePage() {
                             </AnimatePresence>
                         </div>
 
-                        {/* ── 底部固定：下一步按钮（始终占位，生成完成后显示内容） ── */}
+                        {/* ========== 3. 底部固定：下一步按钮 ========== */}
                         <AnimatePresence>
                             {showNextButton && (
                                 <motion.div

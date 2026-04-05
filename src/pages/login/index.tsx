@@ -82,6 +82,7 @@ const checkmarkVariants = {
 export default function Home() {
     const router = useRouter();
     const [isSuccess, setIsSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
     const fireworksRef = useRef<FireworksHandlers>(null);
 
     const fireFireworks = () => {
@@ -93,6 +94,7 @@ export default function Home() {
     };
 
     const handleFinish = async (values: { username: string; password: string }) => {
+        setLoading(true);
         try {
             await login(values);
             setIsSuccess(true);
@@ -108,6 +110,7 @@ export default function Home() {
         } catch (error) {
             console.log('登录失败：', error);
             setIsSuccess(false);
+            setLoading(false);
         }
     };
 
@@ -208,6 +211,7 @@ export default function Home() {
                                             htmlType="submit"
                                             block
                                             className={styles.submitBtn}
+                                            loading={loading}
                                         >
                                             立即登录
                                         </Button>

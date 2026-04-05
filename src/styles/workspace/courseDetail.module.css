@@ -1,0 +1,1103 @@
+/* 课程详情页面样式 - OpenAI 简约风格 */
+
+.courseDetailContainer {
+  width: 100%;
+  height: 100%;
+  background: #f7f7f8;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 顶部信息栏 - 简约白色风格 */
+.courseHeader {
+  background: #ffffff;
+  padding: 20px 32px;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #eef0f2;
+  border-radius: 8px;
+  color: #5e5e66;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: #f2f2f7;
+  color: #1a1a1a;
+  border-color: #d2d2d7;
+}
+
+.courseName {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex: 1;
+  letter-spacing: -0.3px;
+}
+
+.courseStats {
+  display: flex;
+  gap: 32px;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: #86868b;
+}
+
+.statValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* 标签页导航 */
+.tabsContainer {
+  background: #ffffff;
+  border-bottom: 1px solid #eef0f2;
+  padding: 0 32px;
+}
+
+.tabsList {
+  display: flex;
+  gap: 0;
+}
+
+.tabItem {
+  padding: 16px 24px;
+  font-size: 14px;
+  color: #86868b;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabItem:hover {
+  color: #1a1a1a;
+}
+
+.tabItemActive {
+  color: #1a1a1a;
+  font-weight: 500;
+  border-bottom-color: #1a1a1a;
+}
+
+/* 内容区域 */
+.contentArea {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+}
+
+.contentArea::-webkit-scrollbar {
+  width: 5px;
+}
+
+.contentArea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.contentArea::-webkit-scrollbar-thumb {
+  background: #e5e5e5;
+  border-radius: 4px;
+}
+
+.contentArea::-webkit-scrollbar-thumb:hover {
+  background: #c5c5c5;
+}
+
+/* ==================== 数据分析页面 ==================== */
+.analyticsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 统计卡片 - 一行四个 */
+.statsCards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.statsCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eef0f2;
+  transition: all 0.25s ease;
+}
+
+.statsCard:hover {
+  border-color: #d2d2d7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.statsCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.statsCardIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.statsCardIcon.gray {
+  background: #f2f2f7;
+  color: #5e5e66;
+}
+
+.statsCardTrend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.statsCardTrend.up {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.statsCardTrend.down {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.statsCardTrend.stable {
+  background: #f2f2f7;
+  color: #86868b;
+}
+
+.statsCardValue {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+
+.statsCardLabel {
+  font-size: 13px;
+  color: #86868b;
+}
+
+.statsCardMini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f2f2f7;
+}
+
+.miniChart {
+  flex: 1;
+  height: 32px;
+}
+
+/* 图表区域 - 两行三列 */
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.chartCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eef0f2;
+  transition: all 0.25s ease;
+}
+
+.chartCard:hover {
+  border-color: #d2d2d7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.chartTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+}
+
+.chartContent {
+  height: 200px;
+}
+
+/* 热门关键词 */
+.keywordsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 200px;
+  overflow-y: auto;
+}
+
+.keywordItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f7f7f8;
+  border-radius: 8px;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.keywordItem:hover {
+  background: #f2f2f7;
+}
+
+.keywordName {
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.keywordMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.keywordCount {
+  font-size: 12px;
+  color: #86868b;
+}
+
+.keywordTrend {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.keywordTrend.up {
+  color: #16a34a;
+}
+
+.keywordTrend.down {
+  color: #dc2626;
+}
+
+.keywordTrend.stable {
+  color: #86868b;
+}
+
+/* ==================== 学生管理页面 ==================== */
+.studentContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.studentToolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #eef0f2;
+}
+
+.searchInput {
+  width: 240px;
+}
+
+.classSelect {
+  width: 160px;
+}
+
+.toolbarRight {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+}
+
+.studentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.studentCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eef0f2;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.studentCard:hover {
+  border-color: #d2d2d7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.studentCard.selected {
+  border: 2px solid #1a1a1a;
+}
+
+.studentCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.studentAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.studentInfo {
+  flex: 1;
+}
+
+.studentName {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.studentId {
+  font-size: 13px;
+  color: #86868b;
+}
+
+.studentMeta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #86868b;
+}
+
+.studentActions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.checkbox {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+}
+
+/* 学生详情弹窗 */
+.studentDetailModal {
+  padding: 0;
+}
+
+.studentDetailHeader {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 20px;
+  background: #f7f7f8;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.detailStatCard {
+  text-align: center;
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #eef0f2;
+}
+
+.detailStatValue {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.detailStatLabel {
+  font-size: 12px;
+  color: #86868b;
+}
+
+.studentDetailCharts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.detailChartCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #eef0f2;
+}
+
+.detailChartTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+
+.detailChartContent {
+  height: 160px;
+}
+
+.learningAdvice {
+  background: #f7f7f8;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.adviceTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.adviceContent {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.adviceItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: #ffffff;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #5e5e66;
+  line-height: 1.5;
+}
+
+.adviceIcon {
+  color: #1a1a1a;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ==================== 知识库管理页面 ==================== */
+.knowledgeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.knowledgeToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #eef0f2;
+}
+
+.knowledgeTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.folderGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.folderCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eef0f2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.folderCard:hover {
+  border-color: #d2d2d7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.folderHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.folderIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f2f2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5e5e66;
+  font-size: 24px;
+}
+
+.folderInfo {
+  flex: 1;
+}
+
+.folderName {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.folderMeta {
+  font-size: 13px;
+  color: #86868b;
+}
+
+.folderActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.folderActionBtn {
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.folderActionBtn.edit {
+  background: #f2f2f7;
+  color: #5e5e66;
+}
+
+.folderActionBtn.edit:hover {
+  background: #e5e5e5;
+}
+
+.folderActionBtn.upload {
+  background: #f2f2f7;
+  color: #5e5e66;
+}
+
+.folderActionBtn.upload:hover {
+  background: #e5e5e5;
+}
+
+.folderActionBtn.delete {
+  background: #fff5f5;
+  color: #dc2626;
+}
+
+.folderActionBtn.delete:hover {
+  background: #fee2e2;
+}
+
+/* ==================== 作业练习页面 ==================== */
+.assignmentContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.assignmentToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #eef0f2;
+}
+
+.assignmentTitle {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.generateButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #1a1a1a;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.generateButton:hover {
+  background: #333333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.assignmentGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.assignmentCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eef0f2;
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.assignmentCard:hover {
+  border-color: #d2d2d7;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.assignmentCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.assignmentName {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.assignmentDesc {
+  font-size: 13px;
+  color: #86868b;
+  line-height: 1.4;
+}
+
+.assignmentStatus {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.assignmentStatus.draft {
+  background: #f2f2f7;
+  color: #86868b;
+}
+
+.assignmentStatus.published {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.assignmentStatus.closed {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.assignmentMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #f2f2f7;
+}
+
+.assignmentMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #86868b;
+}
+
+.assignmentMetaIcon {
+  color: #86868b;
+  font-size: 14px;
+}
+
+.assignmentProgress {
+  margin-top: 12px;
+}
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #86868b;
+  margin-bottom: 6px;
+}
+
+.progressBar {
+  height: 4px;
+  background: #f2f2f7;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #2dd4bf;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* 生成作业弹窗 */
+.generateModal {
+  padding: 0;
+}
+
+.generateFormItem {
+  margin-bottom: 20px;
+}
+
+.generateLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* 空状态 */
+.emptyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #eef0f2;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  color: #d2d2d7;
+  margin-bottom: 16px;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: #86868b;
+  margin-bottom: 24px;
+}
+
+/* ==================== 文件夹详情弹窗 ==================== */
+.folderDetailModal :global(.ant-modal-content) {
+  padding: 24px;
+  border-radius: 16px;
+}
+
+.folderDetailModal :global(.ant-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.folderDetailModal :global(.ant-table-thead > tr > th) {
+  background: #f7f7f8;
+  font-weight: 500;
+  color: #5e5e66;
+  border-bottom: 1px solid #eef0f2;
+}
+
+.folderDetailModal :global(.ant-table-tbody > tr > td) {
+  border-bottom: 1px solid #f2f2f7;
+}
+
+.folderDetailModal :global(.ant-table-tbody > tr:hover > td) {
+  background: #f7f7f8;
+}
+
+/* ==================== 作业详情样式优化 ==================== */
+.questionCard {
+  padding: 20px;
+  background: #f7f7f8;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+.questionCard:hover {
+  background: #f2f2f7;
+}
+
+.questionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.questionNumber {
+  font-weight: 600;
+  color: #1a1a1a;
+  background: #fff;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.questionScore {
+  margin-left: auto;
+  font-size: 13px;
+  color: #86868b;
+  background: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.questionTitle {
+  font-size: 15px;
+  color: #1a1a1a;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.optionItem {
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid #eef0f2;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.optionItem:hover {
+  border-color: #d2d2d7;
+}
+
+.optionItem.correct {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: #22c55e;
+}
+
+.optionItem.wrong {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+}
+
+.answerSection {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+  border-left: 3px solid #1a1a1a;
+}
+
+.answerLabel {
+  font-size: 13px;
+  color: #1a1a1a;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.answerValue {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.analysisText {
+  font-size: 13px;
+  color: #86868b;
+  margin-top: 8px;
+}
+
+/* ==================== 学生作答情况样式 ==================== */
+.submissionStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f7f7f8;
+  border-radius: 12px;
+}
+
+.submissionStatItem {
+  text-align: center;
+}
+
+.submissionStatValue {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.submissionStatValue.success {
+  color: #22c55e;
+}
+
+.submissionStatValue.error {
+  color: #ef4444;
+}
+
+.submissionStatLabel {
+  font-size: 13px;
+  color: #86868b;
+}
+
+.studentAnswerCard {
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.studentAnswerCard.correct {
+  background: rgba(34, 197, 94, 0.05);
+  border: 1px solid #86efac;
+}
+
+.studentAnswerCard.wrong {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid #fca5a5;
+}
+
+.answerCompare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.answerCompareItem {
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+}
+
+.answerCompareLabel {
+  font-size: 12px;
+  color: #86868b;
+  margin-bottom: 4px;
+}
+
+.answerCompareValue {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.answerCompareValue.user {
+  color: #1a1a1a;
+}
+
+.answerCompareValue.correct {
+  color: #22c55e;
+}
+
+/* 响应式 */
+@media (max-width: 1200px) {
+  .statsCards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chartsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .courseHeader {
+    padding: 16px 20px;
+  }
+
+  .courseName {
+    font-size: 18px;
+  }
+
+  .courseStats {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .contentArea {
+    padding: 16px 20px;
+  }
+
+  .statsCards {
+    grid-template-columns: 1fr;
+  }
+
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .studentDetailCharts {
+    grid-template-columns: 1fr;
+  }
+}
