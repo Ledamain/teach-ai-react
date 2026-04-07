@@ -69,18 +69,6 @@ export interface AnalyticsData {
   }[];
 }
 
-// 作业练习类型
-export interface Assignment {
-  id: string;
-  title: string;
-  description?: string;
-  startDate?: string;
-  dueDate: string;
-  status: 'draft' | 'published' | 'closed';
-  submissionCount: number;
-  totalStudents: number;
-}
-
 // 班级列表类型
 export interface ClassInfo {
   id: string;

@@ -159,6 +159,18 @@ export default {
             }
         });
     },
+    /**
+     * 启用/关闭文件
+     * @returns 知识库状态
+     */
+    changeRepoStatus(id: number | null,status: string) {
+        return request.get<boolean>('/repo/change-status',{
+            params: {
+                id: id,
+                status: status
+            }
+        });
+    },
 
     /**
      * 获取知识库文件夹详情

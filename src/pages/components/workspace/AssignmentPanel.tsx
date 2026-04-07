@@ -31,18 +31,16 @@ import {
 } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import { 
-  getAssignmentList, 
-  createAssignment,
-  getClassList
-} from '@/api/workspace/courseDetail';
-import type { 
-  Assignment,
+import type {
   ClassInfo
 } from '@/types/workspace/CourseDetailType';
 import styles from '@/styles/workspace/courseDetail.module.css';
-import {AssignmentDetail, Question, StudentSubmission, SubmissionListItem} from "@/types/assignment/AssignmentType";
-import {getAssignmentDetail, getStudentSubmission, getSubmissionList, publishAssignment} from "@/api/assignment";
+import {AssignmentDetail,Assignment,  Question, StudentSubmission, SubmissionListItem, PublishData} from "@/types/assignment/AssignmentType";
+import {getStudentSubmission} from "@/api/assignment";
+import AssignmentApi from '@/api/assignment/index'
+import ClassesApi from '@/api/classes/index'
+import {UserInfo} from "@/types/login/LoginType";
+import {CLassesType} from "@/types/classes/ClassesType";
 
 const { TextArea } = Input;
 const { RangePicker } = DatePicker;
@@ -62,6 +60,18 @@ const QuestionTypeTag: React.FC<{ type: string }> = ({ type }) => {
   return <Tag style={{ background: color, color: '#fff', border: 'none' }}>{text}</Tag>;
 };
 
+const getUserId = (): number | null => {
+  if (typeof window === 'undefined') return null;
+  const userInfoStr = window.localStorage.getItem('userInfo');
+  if (!userInfoStr) return null;
+  try {
+    const userInfo: UserInfo = JSON.parse(userInfoStr);
+    return Number(userInfo.id);
+  } catch {
+    return null;
+  }
+};
+
 const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +89,7 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
   const [publishModalVisible, setPublishModalVisible] = useState(false);
   const [publishForm] = Form.useForm();
   const [publishLoading, setPublishLoading] = useState(false);
-  const [classes, setClasses] = useState<ClassInfo[]>([]);
+  const [classes, setClasses] = useState<CLassesType[]>([]);
   
   // 作答情况弹窗
   const [submissionModalVisible, setSubmissionModalVisible] = useState(false);
@@ -95,12 +105,12 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
   // 搜索筛选状态
   const [searchKeyword, setSearchKeyword] = useState('');
   const [searchClass, setSearchClass] = useState<string | undefined>();
-  const [searchStatus, setSearchStatus] = useState<string | undefined>();
+  const [searchStatus, setSearchStatus] = useState<number | undefined>();
 
   const fetchAssignments = useCallback(async () => {
     try {
       setLoading(true);
-      const result = await getAssignmentList(courseId);
+      const result = await AssignmentApi.getAssignmentList(Number(courseId), getUserId());
       setAssignments(result);
     } catch (error) {
       console.error('获取作业列表失败:', error);
@@ -112,7 +122,7 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
 
   const fetchClasses = useCallback(async () => {
     try {
-      const result = await getClassList(courseId);
+      const result = await ClassesApi.getClassesListByRepoCategoryId(Number(courseId));
       setClasses(result);
     } catch (error) {
       console.error('获取班级列表失败:', error);
@@ -131,15 +141,11 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
   }) => {
     try {
       setSubmitLoading(true);
-      const [startDate, endDate] = values.dateRange;
-      await createAssignment({
+      await AssignmentApi.createAssignment({
         exerciseName: values.title,
-        repoCategoryId: courseId,
+        repoCategoryId: Number(courseId),
         description: values.description,
-        dueDate: endDate.format('YYYY-MM-DD HH:mm'),
-        startDate: startDate.format('YYYY-MM-DD HH:mm'),
-        status: 'draft',
-        totalStudents: 0,
+        teacherUserId: getUserId()
       });
       message.success('创建成功');
       setModalVisible(false);
@@ -153,13 +159,13 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: number) => {
     switch (status) {
-      case 'draft':
+      case 0:
         return '草稿';
-      case 'published':
+      case 1:
         return '进行中';
-      case 'closed':
+      case 2:
         return '已结束';
       default:
         return status;
@@ -177,8 +183,13 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
     setDetailModalVisible(true);
     
     try {
-      const detail = await getAssignmentDetail(courseId, assignment.id);
-      setAssignmentDetail(detail);
+      if (assignment.id != null) {
+        const detail = await AssignmentApi.getAssignmentDetail(assignment.id);
+        if (detail.content != null) {
+          const examData: AssignmentDetail = JSON.parse(detail.content)
+          setAssignmentDetail(examData);
+        }
+      }
     } catch (error) {
       console.error('获取作业详情失败:', error);
       message.error('获取作业详情失败');
@@ -192,18 +203,18 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
     // 姓名/学号搜索
     const matchKeyword =
         searchKeyword === '' ||
-        item.studentName.includes(searchKeyword) ||
-        item.studentId.includes(searchKeyword);
+        item.studentUserName.includes(searchKeyword) ||
+        item.clientNum.includes(searchKeyword);
 
     // 班级筛选
     const matchClass =
         !searchClass ||
-        item.className === searchClass;
+        item.classesName === searchClass;
 
     // 状态筛选
     const matchStatus =
         !searchStatus ||
-        item.submitStatus === searchStatus;
+        item.completed === searchStatus;
 
     return matchKeyword && matchClass && matchStatus;
   });
@@ -216,15 +227,27 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
   // 发布作业
   const handlePublish = async (values: { classIds: string[]; dateRange: [Dayjs, Dayjs] }) => {
     if (!currentAssignment) return;
-    
+    const processedValues = {
+      ...values,
+      classIds: values.classIds?.map(id => `_${id}C`).join(',') || ''
+    };
+
     setPublishLoading(true);
     try {
       const [startTime, endTime] = values.dateRange;
-      await publishAssignment(courseId, currentAssignment.id, {
-        classIds: values.classIds,
-        startTime: startTime.format('YYYY-MM-DD HH:mm'),
-        endTime: endTime.format('YYYY-MM-DD HH:mm'),
-      });
+      values.classIds.forEach(e => {
+
+      })
+      const submit: PublishData = {
+        repoCategoryId: Number(courseId),
+        classesId: processedValues.classIds,
+        id: currentAssignment.id,
+        teacherUserId: getUserId(),
+        exerciseName: currentAssignment.exerciseName,
+        startTime: startTime.valueOf(),
+        endTime: endTime.valueOf(),
+      }
+      await AssignmentApi.publishAssignment(submit);
       message.success('发布成功');
       setPublishModalVisible(false);
       publishForm.resetFields();
@@ -251,8 +274,10 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
     setSubmissionModalVisible(true);
     
     try {
-      const list = await getSubmissionList(courseId, currentAssignment.id);
-      setSubmissionList(list);
+      if (currentAssignment.id != null) {
+        const list = await AssignmentApi.getSubmissionList(currentAssignment.id);
+        setSubmissionList(list);
+      }
     } catch (error) {
       console.error('获取作答情况失败:', error);
       message.error('获取作答情况失败');
@@ -342,15 +367,15 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
   const submissionColumns = [
     {
       title: '学号',
-      dataIndex: 'studentId',
-      key: 'studentId',
+      dataIndex: 'clientNum',
+      key: 'clientNum',
       width: 120,
     },
     {
       title: '姓名',
-      dataIndex: 'studentName',
-      key: 'studentName',
-      width: 100,
+      dataIndex: 'studentUserName',
+      key: 'studentUserName',
+      width: 130,
       render: (name: string) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
@@ -372,25 +397,25 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
     },
     {
       title: '班级',
-      dataIndex: 'className',
-      key: 'className',
-      width: 120,
+      dataIndex: 'classesName',
+      key: 'classesName',
+      width: 150,
     },
     {
       title: '提交状态',
-      dataIndex: 'submitStatus',
-      key: 'submitStatus',
+      dataIndex: 'completed',
+      key: 'completed',
       width: 100,
-      render: (status: string) => (
-        status === 'completed' 
+      render: (status: number) => (
+        status === 1
           ? <Tag color="success">已提交</Tag>
           : <Tag color="default">未提交</Tag>
       ),
     },
     {
       title: '提交时间',
-      dataIndex: 'submitTime',
-      key: 'submitTime',
+      dataIndex: 'updateTime',
+      key: 'updateTime',
       width: 160,
       render: (time?: string) => time || '-',
     },
@@ -408,7 +433,7 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
       key: 'action',
       width: 100,
       render: (_: unknown, record: SubmissionListItem) => (
-        record.submitStatus === 'completed' ? (
+        record.completed === 1 ? (
           <Button 
             type="link" 
             size="small"
@@ -468,61 +493,65 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
         </motion.div>
       ) : (
         <div className={styles.assignmentGrid}>
-          <AnimatePresence>
-            {assignments.map((assignment, index) => (
-              <motion.div
-                key={assignment.id}
-                className={styles.assignmentCard}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25, delay: index * 0.05 }}
-                layout
-                onClick={() => handleAssignmentClick(assignment)}
-              >
-                <div className={styles.assignmentCardHeader}>
-                  <div>
-                    <div className={styles.assignmentName}>{assignment.title}</div>
-                    {assignment.description && (
-                      <div className={styles.assignmentDesc}>{assignment.description}</div>
-                    )}
-                  </div>
-                  <span className={`${styles.assignmentStatus} ${styles[assignment.status]}`}>
+          {Array.isArray(assignments) && assignments.length > 0 &&
+            <AnimatePresence>
+              {assignments.map((assignment, index) => (
+                  <motion.div
+                      key={assignment.id}
+                      className={styles.assignmentCard}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.25, delay: index * 0.05 }}
+                      layout
+                      onClick={() => handleAssignmentClick(assignment)}
+                  >
+                    <div className={styles.assignmentCardHeader}>
+                      <div>
+                        <div className={styles.assignmentName}>{assignment.exerciseName}</div>
+                        {assignment.description && (
+                            <div className={styles.assignmentDesc}>{assignment.description}</div>
+                        )}
+                      </div>
+                      <span className={`${styles.assignmentStatus} ${styles[assignment.status]}`}>
                     {getStatusText(assignment.status)}
                   </span>
-                </div>
-                <div className={styles.assignmentMeta}>
-                  <div className={styles.assignmentMetaItem}>
-                    <CalendarOutlined className={styles.assignmentMetaIcon} />
-                    <span>开始: {formatDate(assignment.startDate || '')}</span>
-                  </div>
-                  <div className={styles.assignmentMetaItem}>
-                    <ClockCircleOutlined className={styles.assignmentMetaIcon} />
-                    <span>截止: {formatDate(assignment.dueDate)}</span>
-                  </div>
-                </div>
-                {assignment.totalStudents > 0 && (
-                  <div className={styles.assignmentProgress}>
-                    <div className={styles.progressLabel}>
+                    </div>
+                    <div className={styles.assignmentMeta}>
+                      <div className={styles.assignmentMetaItem}>
+                        <CalendarOutlined className={styles.assignmentMetaIcon} />
+                        <span>
+                      开始: {assignment?.startTime ? formatDate(assignment.startTime) : '未设置'}
+                    </span>
+                      </div>
+                      <div className={styles.assignmentMetaItem}>
+                        <ClockCircleOutlined className={styles.assignmentMetaIcon} />
+                        <span>截止: {assignment?.endTime ? formatDate(assignment.endTime) : '未设置'}</span>
+                      </div>
+                    </div>
+                    {assignment.totalStudents > 0 && (
+                        <div className={styles.assignmentProgress}>
+                          <div className={styles.progressLabel}>
                       <span>
                         <TeamOutlined style={{ marginRight: 4 }} />
                         提交进度
                       </span>
-                      <span>{assignment.submissionCount}/{assignment.totalStudents}</span>
-                    </div>
-                    <div className={styles.progressBar}>
-                      <div 
-                        className={styles.progressFill}
-                        style={{ 
-                          width: `${(assignment.submissionCount / assignment.totalStudents) * 100}%` 
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </AnimatePresence>
+                            <span>{assignment.submissionCount}/{assignment.totalStudents}</span>
+                          </div>
+                          <div className={styles.progressBar}>
+                            <div
+                                className={styles.progressFill}
+                                style={{
+                                  width: `${(assignment.submissionCount / assignment.totalStudents) * 100}%`
+                                }}
+                            />
+                          </div>
+                        </div>
+                    )}
+                  </motion.div>
+              ))}
+            </AnimatePresence>
+          }
         </div>
       )}
 
@@ -554,24 +583,13 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
           <Form.Item
             name="description"
             label="题目要求"
+            rules={[{ required: true, message: '请输入题目要求' }]}
           >
             <TextArea 
-              placeholder="请输入题目要求或说明（可选）" 
+              placeholder="请输入题目要求（支持单选、多选、判断）"
               rows={4}
               showCount
-              maxLength={500}
-            />
-          </Form.Item>
-          <Form.Item
-            name="dateRange"
-            label="起止时间"
-            rules={[{ required: true, message: '请选择起止时间' }]}
-          >
-            <RangePicker 
-              showTime={{ format: 'HH:mm' }}
-              format="YYYY-MM-DD HH:mm"
-              style={{ width: '100%' }}
-              placeholder={['开始时间', '结束时间']}
+              maxLength={200}
             />
           </Form.Item>
           <Form.Item style={{ marginBottom: 0, marginTop: 24 }}>
@@ -637,7 +655,7 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 12 }}>
-                {currentAssignment?.status === 'draft' && (
+                {currentAssignment?.status === 0 && (
                   <Button 
                     type="primary" 
                     icon={<SendOutlined />}
@@ -647,7 +665,7 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
                     发布作业
                   </Button>
                 )}
-                {(currentAssignment?.status === 'published' || currentAssignment?.status === 'closed') && (
+                {(currentAssignment?.status === 1 || currentAssignment?.status === 2) && (
                   <Button 
                     icon={<TeamOutlined />}
                     onClick={handleViewSubmissions}
@@ -751,7 +769,7 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
             <Select
               mode="multiple"
               placeholder="请选择要发布的班级"
-              options={classes.map(c => ({ label: c.name, value: c.id }))}
+              options={classes.map(c => ({ label: c.classesName, value: c.id }))}
             />
           </Form.Item>
           <Form.Item
@@ -837,13 +855,13 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 24, fontWeight: 600, color: '#22c55e' }}>
-                      {submissionList.filter(s => s.submitStatus === 'completed').length}
+                      {submissionList.filter(s => s.completed === 1).length}
                     </div>
                     <div style={{ fontSize: 13, color: '#86868b' }}>已提交</div>
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <div style={{ fontSize: 24, fontWeight: 600, color: '#ef4444' }}>
-                      {submissionList.filter(s => s.submitStatus === 'not_submitted').length}
+                      {submissionList.filter(s => s.completed === 0).length}
                     </div>
                     <div style={{ fontSize: 13, color: '#86868b' }}>未提交</div>
                   </div>
@@ -871,7 +889,7 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
                       value={searchClass}
                       onChange={(val) => setSearchClass(val)}
                       style={{ width: 180 }}
-                      options={Array.from(new Set(submissionList.map(item => item.className))).map(name => ({
+                      options={Array.from(new Set(submissionList.map(item => item.classesName))).map(name => ({
                         label: name,
                         value: name
                       }))}
@@ -883,8 +901,8 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
                       onChange={(val) => setSearchStatus(val)}
                       style={{ width: 150 }}
                       options={[
-                        { label: '已提交', value: 'completed' },
-                        { label: '未提交', value: 'not_submitted' }
+                        { label: '已提交', value: 1 },
+                        { label: '未提交', value: 0 }
                       ]}
                   />
                 </div>
@@ -894,10 +912,10 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
               {(() => {
                 const filteredSubmissions = submissionList.filter(item => {
                   const matchKeyword = !searchKeyword ||
-                      item.studentName.includes(searchKeyword) ||
-                      item.studentId.includes(searchKeyword);
-                  const matchClass = !searchClass || item.className === searchClass;
-                  const matchStatus = !searchStatus || item.submitStatus === searchStatus;
+                      item.studentUserName.includes(searchKeyword) ||
+                      item.clientNum.includes(searchKeyword);
+                  const matchClass = !searchClass || item.classesName === searchClass;
+                  const matchStatus = !searchStatus || item.completed === searchStatus;
                   return matchKeyword && matchClass && matchStatus;
                 });
 
@@ -983,14 +1001,14 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
                   fontSize: 20,
                   fontWeight: 500,
                 }}>
-                  {selectedStudent.studentName.charAt(0)}
+                  {selectedStudent.studentUserName.charAt(0)}
                 </div>
                 <div>
                   <h2 style={{ fontSize: 20, fontWeight: 600, color: '#1a1a1a', margin: 0 }}>
-                    {selectedStudent.studentName}
+                    {selectedStudent.studentUserName}
                   </h2>
                   <div style={{ fontSize: 14, color: '#86868b' }}>
-                    {selectedStudent.studentId} · {selectedStudent.className}
+                    {selectedStudent.clientNum} · {selectedStudent.classesName}
                   </div>
                 </div>
                 <div style={{ marginLeft: 'auto', textAlign: 'right' }}>

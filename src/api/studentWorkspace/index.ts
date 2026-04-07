@@ -3,16 +3,17 @@
  * 所有接口均为预留，需要根据实际后端实现进行对接
  */
 
-import type {
+import {
+  AssignmentSubmitRecord,
   StudentAnalyticsData,
   StudentAssignment,
-  StudentAssignmentDetail,
+  StudentAssignmentDetail, StudentAssignmentParams,
   StudentSubmitData,
   SubmitResult,
-} from '@/types/workspace/StudentWorkspaceType';
-import type { KnowledgeFolder, KnowledgeFolderDetail } from '@/types/workspace/CourseDetailType';
+} from '@/types/studentWorkspace/StudentWorkspaceType';
 import {request} from "@/utils/request";
 import {Course} from "@/types/workspace/WorkspaceType";
+import {Question} from "@/types/assignment/AssignmentType";
 
 // API 基础路径配置
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
@@ -81,42 +82,6 @@ export const getStudentAnalytics = async (
 // ==================== 学生知识库相关 API ====================
 
 
-/**
- * 获取知识库文件夹详情（学生视角）
- * @param courseId 课程ID
- * @param folderId 文件夹ID
- * @param studentId 学生ID
- * @returns 文件夹详情
- */
-export const getStudentKnowledgeFolderDetail = async (
-  courseId: string,
-  folderId: string,
-  studentId: string
-): Promise<KnowledgeFolderDetail> => {
-  // TODO: 替换为实际 API 调用
-  // const response = await fetch(`${API_BASE_URL}/student/${studentId}/courses/${courseId}/knowledge/folders/${folderId}`);
-  // return response.json();
-
-  // 模拟数据
-  return {
-    id: folderId,
-    name: '数学基础',
-    description: '本知识库包含高等数学基础知识点、公式汇总及练习题',
-    fileCount: 6,
-    enabled: true,
-    createdAt: '2024-03-01',
-    updatedAt: '2024-03-30',
-    files: [
-      { id: '1', folderId, name: '第一章-导数基础.docx', type: 'docx', size: 1024000, uploadedAt: '2024-03-25 10:30:00', url: '/files/1.docx' },
-      { id: '2', folderId, name: '公式汇总.doc', type: 'doc', size: 512000, uploadedAt: '2024-03-26 14:20:00', url: '/files/2.doc' },
-      { id: '3', folderId, name: '课程讲义.pptx', type: 'pptx', size: 2048000, uploadedAt: '2024-03-27 09:15:00', url: '/files/3.pptx' },
-      { id: '4', folderId, name: '练习题.ppt', type: 'ppt', size: 1536000, uploadedAt: '2024-03-28 16:45:00', url: '/files/4.ppt' },
-      { id: '5', folderId, name: '学习笔记.txt', type: 'txt', size: 10240, uploadedAt: '2024-03-29 11:00:00', url: '/files/5.txt' },
-      { id: '6', folderId, name: '重点总结.md', type: 'md', size: 20480, uploadedAt: '2024-03-30 08:30:00', url: '/files/6.md' },
-    ],
-  };
-};
-
 // ==================== 学生作业相关 API ====================
 
 /**
@@ -126,8 +91,8 @@ export const getStudentKnowledgeFolderDetail = async (
  * @returns 作业列表
  */
 export const getStudentAssignmentList = async (
-  courseId: string,
-  studentId: string
+    courseId: string,
+    studentId: string
 ): Promise<StudentAssignment[]> => {
   // TODO: 替换为实际 API 调用
   // const response = await fetch(`${API_BASE_URL}/student/${studentId}/courses/${courseId}/assignments`);
@@ -188,199 +153,259 @@ export const getStudentAssignmentList = async (
 
 /**
  * 获取学生作业详情（用于答题或查看结果）
- * @param courseId 课程ID
+ * 调用真实接口: GET /exercise/get-student?id={assignmentId}&studentUserId={studentId}
+ * 返回的数据包含答案和解析，前端根据 completed 状态控制是否显示
  * @param assignmentId 作业ID
  * @param studentId 学生ID
  * @returns 作业详情
  */
 export const getStudentAssignmentDetail = async (
-  courseId: string,
-  assignmentId: string,
-  studentId: string
+    assignmentId: string,
+    studentId: string
 ): Promise<StudentAssignmentDetail> => {
   // TODO: 替换为实际 API 调用
-  // const response = await fetch(`${API_BASE_URL}/student/${studentId}/courses/${courseId}/assignments/${assignmentId}`);
-  // return response.json();
+  // const response = await fetch(`${API_BASE_URL}/exercise/get-student?id=${assignmentId}&studentUserId=${studentId}`);
+  // const data: ExerciseApiResponse = await response.json();
 
-  // 模拟数据 - 根据作业状态返回不同数据
-  const baseQuestions = [
-    {
-      id: 1,
-      type: 'single' as const,
-      title: '下列哪个是 JavaScript 的原始数据类型？',
-      options: ['Array', 'Object', 'String', 'Function'],
-      score: 10,
-    },
-    {
-      id: 2,
-      type: 'single' as const,
-      title: 'HTML 中用于定义段落的标签是？',
-      options: ['<div>', '<p>', '<span>', '<section>'],
-      score: 10,
-    },
-    {
-      id: 3,
-      type: 'single' as const,
-      title: 'CSS 中哪个属性可以改变文字颜色？',
-      options: ['text-color', 'font-color', 'color', 'background'],
-      score: 10,
-    },
-    {
-      id: 4,
-      type: 'multiple' as const,
-      title: '下列属于 CSS 盒模型组成部分的有？',
-      options: ['margin', 'padding', 'border', 'content'],
-      score: 20,
-    },
-    {
-      id: 5,
-      type: 'multiple' as const,
-      title: '下列哪些是 HTTP 请求方法？',
-      options: ['GET', 'POST', 'FETCH', 'DELETE'],
-      score: 20,
-    },
-    {
-      id: 6,
-      type: 'judge' as const,
-      title: '在 JavaScript 中，null 和 undefined 是完全相同的。',
-      options: ['正确', '错误'],
-      score: 10,
-    },
-    {
-      id: 7,
-      type: 'judge' as const,
-      title: 'CSS 中 display: none 会使元素脱离文档流。',
-      options: ['正确', '错误'],
-      score: 10,
-    },
-  ];
-
-  // 模拟已完成的作业（包含答案和用户作答）
-  if (assignmentId === '1' || assignmentId === '4') {
-    return {
-      id: assignmentId,
-      title: assignmentId === '1' ? '高等数学期中测试' : '积分基础练习',
-      description: assignmentId === '1' ? '涵盖导数、积分基础内容' : '第二章基础练习',
+  // 模拟后端返回的数据（格式与用户提供的一致）
+  const mockApiResponse: ExerciseApiResponse = {
+    id: parseInt(assignmentId) || 6,
+    classesId: '_2C,_1C',
+    classesIdsList: null,
+    repoCategoryName: null,
+    nickname: null,
+    repoCategoryId: 25,
+    teacherUserId: 4,
+    exerciseName: '数学建模第二节练习题',
+    content: JSON.stringify({
+      title: '数学建模第二节练习题',
+      description: '包含单选、多选、判断题，无简答题，适合前端直接渲染',
       totalScore: 100,
-      status: 'closed',
-      startDate: '2024-04-01 09:00',
-      dueDate: '2024-04-01 11:00',
-      submitStatus: 'completed',
-      userScore: assignmentId === '1' ? 92 : 85,
-      submitTime: assignmentId === '1' ? '2024-04-01 10:45' : '2024-03-30 20:15',
-      questions: baseQuestions.map((q, idx) => ({
-        ...q,
-        answer: idx === 0 ? 'String' :
-               idx === 1 ? '<p>' :
-               idx === 2 ? 'color' :
-               idx === 3 ? ['margin', 'padding', 'border', 'content'] :
-               idx === 4 ? ['GET', 'POST', 'DELETE'] :
-               idx === 5 ? '错误' : '正确',
-        analysis: idx === 0 ? 'String 是基本数据类型，其余均为引用类型。' :
-                 idx === 1 ? '<p> 标签专门用于表示文本段落。' :
-                 idx === 2 ? 'CSS 使用 color 属性设置文字颜色。' :
-                 idx === 3 ? '标准盒模型包含内容、内边距、边框、外边距。' :
-                 idx === 4 ? 'FETCH 是浏览器 API，并非 HTTP 请求方法。' :
-                 idx === 5 ? 'null 表示空对象，undefined 表示未定义，二者类型不同。' :
-                 'display: none 不占据空间，visibility: hidden 仍占据空间。',
-        userAnswer: idx === 0 ? 'String' :
-                   idx === 1 ? '<p>' :
-                   idx === 2 ? 'color' :
-                   idx === 3 ? ['margin', 'padding', 'border', 'content'] :
-                   idx === 4 ? ['GET', 'POST', 'FETCH'] : // 故意答错
-                   idx === 5 ? '错误' : '正确',
-        isCorrect: idx !== 4, // 第5题答错
-        userScore: idx === 4 ? 0 : q.score,
-      })),
-    };
-  }
-
-  // 进行中的作业（不包含答案）
-  return {
-    id: assignmentId,
-    title: '函数与极限练习',
-    description: '第一章课后练习题',
+      questions: [
+        {
+          id: 1,
+          type: 'single',
+          title: '在数学建模中，以下哪项通常用于描述连续变化的动态系统？',
+          options: ['差分方程', '微分方程', '线性规划', '整数规划'],
+          answer: '微分方程',
+          score: 10,
+          analysis: '微分方程适用于描述状态随时间连续变化的动态系统，如人口增长、传染病传播等。'
+        },
+        {
+          id: 2,
+          type: 'single',
+          title: 'Logistic 模型主要用于描述哪种现象？',
+          options: ['指数增长', '资源无限增长', '受资源限制的增长', '周期性波动'],
+          answer: '受资源限制的增长',
+          score: 10,
+          analysis: 'Logistic 模型引入环境承载力，描述在有限资源下种群或事物的增长过程。'
+        },
+        {
+          id: 3,
+          type: 'single',
+          title: '在建立数学模型时，"模型假设"的主要作用是？',
+          options: ['使问题更复杂', '忽略所有现实因素', '简化问题并明确适用范围', '直接得出最终答案'],
+          answer: '简化问题并明确适用范围',
+          score: 10,
+          analysis: '合理假设可简化现实问题，同时界定模型的适用条件和边界。'
+        },
+        {
+          id: 4,
+          type: 'multiple',
+          title: '以下哪些是数学建模的基本步骤？',
+          options: ['模型准备', '模型假设', '求解模型', '模型检验'],
+          answer: ['模型准备', '模型假设', '求解模型', '模型检验'],
+          score: 20,
+          analysis: '数学建模通常包括准备、假设、构建、求解、分析、检验和应用等步骤。'
+        },
+        {
+          id: 5,
+          type: 'multiple',
+          title: '关于微分方程模型，下列说法正确的有？',
+          options: ['可用于描述瞬时变化率', '平衡点分析有助于理解系统长期行为', '只能用于物理问题', '可通过数值方法求解'],
+          answer: ['可用于描述瞬时变化率', '平衡点分析有助于理解系统长期行为', '可通过数值方法求解'],
+          score: 20,
+          analysis: '微分方程广泛应用于生物、经济等领域，不仅限于物理；当解析解难求时，常用数值方法（如欧拉法）求解。'
+        },
+        {
+          id: 6,
+          type: 'judge',
+          title: '数学模型越复杂，其预测效果一定越好。',
+          options: ['正确', '错误'],
+          answer: '错误',
+          score: 10,
+          analysis: '过于复杂的模型可能导致过拟合、计算困难或参数难以估计，反而降低实用性和泛化能力。'
+        },
+        {
+          id: 7,
+          type: 'judge',
+          title: '在Logistic增长模型中，当种群数量达到环境容纳量时，增长速率为零。',
+          options: ['正确', '错误'],
+          answer: '正确',
+          score: 10,
+          analysis: 'Logistic模型中，增长率与(1 - N/K)成正比，当N=K时，增长率为0，种群数量稳定。'
+        }
+      ]
+    }),
+    completed: 0, // 0: 未提交, 1: 已提交
+    questionCount: 7,
     totalScore: 100,
-    status: 'published',
-    startDate: '2024-04-05 14:00',
-    dueDate: '2024-04-07 23:59',
-    submitStatus: 'not_started',
-    questions: baseQuestions,
+    startTime: 1775318400000,
+    endTime: 1775577601000,
+    status: 1, // 1: 进行中, 0: 已结束
+    submissionCount: 0,
+    totalStudents: 7,
+    createTime: 1775391827000
+  };
+
+  // 使用模拟数据（实际项目中应使用上面注释的API调用）
+  const data = mockApiResponse;
+
+  // 解析 content JSON 字符串
+  const contentData: AssignmentContent = JSON.parse(data.content);
+
+  // 转换为前端使用的格式
+  const formatTimestamp = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    return date.toISOString().replace('T', ' ').slice(0, 16);
+  };
+
+  return {
+    id: String(data.id),
+    title: data.exerciseName,
+    description: contentData.description,
+    totalScore: data.totalScore,
+    status: data.status === 1 ? 'published' : 'closed',
+    startDate: formatTimestamp(data.startTime),
+    dueDate: formatTimestamp(data.endTime),
+    submitStatus: data.completed === 1 ? 'completed' : 'not_started',
+    questions: contentData.questions,
   };
 };
 
 /**
- * 提交学生作业答案
+ * 解析后端返回的作业数据
+ * 将 ExerciseApiResponse 转换为 StudentAssignmentDetail
+ */
+export const parseExerciseResponse = (data: ExerciseApiResponse): StudentAssignmentDetail => {
+  const contentData: AssignmentContent = JSON.parse(data.content);
+
+  const formatTimestamp = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    return date.toISOString().replace('T', ' ').slice(0, 16);
+  };
+
+  return {
+    id: String(data.id),
+    title: data.exerciseName,
+    description: contentData.description,
+    totalScore: data.totalScore,
+    status: data.status === 1 ? 'published' : 'closed',
+    startDate: formatTimestamp(data.startTime),
+    dueDate: formatTimestamp(data.endTime),
+    submitStatus: data.completed === 1 ? 'completed' : 'not_started',
+    questions: contentData.questions,
+  };
+};
+
+/**
+ * 提交学生作业答案（前端评分版本）
+ * 注意：此方法不再在后端评分，评分逻辑移到前端
  * @param courseId 课程ID
  * @param studentId 学生ID
- * @param submitData 提交数据
+ * @param submitRecord 完整的提交记录（包含评分结果）
  * @returns 提交结果
  */
 export const submitStudentAssignment = async (
-  courseId: string,
-  studentId: string,
-  submitData: StudentSubmitData
-): Promise<SubmitResult> => {
+    courseId: string,
+    studentId: string,
+    submitRecord: AssignmentSubmitRecord
+): Promise<{ success: boolean; message: string }> => {
   // TODO: 替换为实际 API 调用
-  // const response = await fetch(`${API_BASE_URL}/student/${studentId}/courses/${courseId}/assignments/${submitData.assignmentId}/submit`, {
+  // const response = await fetch(`${API_BASE_URL}/student/${studentId}/courses/${courseId}/assignments/${submitRecord.examId}/submit`, {
   //   method: 'POST',
   //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(submitData),
+  //   body: JSON.stringify(submitRecord),
   // });
   // return response.json();
 
-  console.log('提交作业:', { courseId, studentId, submitData });
+  console.log('保存作业提交记录:', { courseId, studentId, submitRecord });
 
-  // 模拟评分结果
-  const correctAnswers: Record<number, string | string[]> = {
-    1: 'String',
-    2: '<p>',
-    3: 'color',
-    4: ['margin', 'padding', 'border', 'content'],
-    5: ['GET', 'POST', 'DELETE'],
-    6: '错误',
-    7: '正确',
-  };
-
-  const scores: Record<number, number> = {
-    1: 10, 2: 10, 3: 10, 4: 20, 5: 20, 6: 10, 7: 10,
-  };
-
-  let userScore = 0;
-  const questions = submitData.answers.map(a => {
-    const correctAnswer = correctAnswers[a.questionId];
-    const isCorrect = Array.isArray(correctAnswer)
-      ? Array.isArray(a.answer) &&
-        correctAnswer.length === a.answer.length &&
-        correctAnswer.every(c => a.answer.includes(c))
-      : a.answer === correctAnswer;
-    
-    const questionScore = isCorrect ? scores[a.questionId] : 0;
-    userScore += questionScore;
-
-    return {
-      id: a.questionId,
-      type: a.questionId <= 3 ? 'single' as const :
-            a.questionId <= 5 ? 'multiple' as const : 'judge' as const,
-      title: '',
-      options: [],
-      score: scores[a.questionId],
-      answer: correctAnswer,
-      analysis: '',
-      userAnswer: a.answer,
-      isCorrect,
-      userScore: questionScore,
-    };
-  });
-
+  // 模拟保存成功
   return {
     success: true,
-    totalScore: 100,
-    userScore,
-    submitTime: new Date().toISOString(),
-    questions,
+    message: '作业提交成功',
   };
 };
+
+/**
+ * 保存作业提交记录到后端
+ * @param courseId 课程ID
+ * @param studentId 学生ID
+ * @param submitRecord 完整的提交记录
+ * @returns 保存结果
+ */
+export const saveAssignmentSubmitRecord = async (
+    courseId: string,
+    studentId: string,
+    submitRecord: AssignmentSubmitRecord
+): Promise<{ success: boolean; recordId?: string; message: string }> => {
+  // TODO: 替换为实际 API 调用
+  // const response = await fetch(`${API_BASE_URL}/student/${studentId}/courses/${courseId}/assignment-records`, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify(submitRecord),
+  // });
+  // return response.json();
+
+  console.log('保存提交记录到后端:', { courseId, studentId, submitRecord });
+
+  // 模拟保存成功
+  return {
+    success: true,
+    recordId: `record-${Date.now()}`,
+    message: '提交记录保存成功',
+  };
+};
+
+/**
+ * 获取学生作业提交记录列表
+ * @param courseId 课程ID
+ * @param studentId 学生ID
+ * @returns 提交记录列表
+ */
+export const getStudentSubmitRecords = async (
+    courseId: string,
+    studentId: string
+): Promise<AssignmentSubmitRecord[]> => {
+  // TODO: 替换为实际 API 调用
+  // const response = await fetch(`${API_BASE_URL}/student/${studentId}/courses/${courseId}/assignment-records`);
+  // return response.json();
+
+  // 模拟数据
+  return [];
+};
+
+/**
+ * 获取单个作业提交记录详情
+ * @param courseId 课程ID
+ * @param studentId 学生ID
+ * @param examId 作业/考试ID
+ * @returns 提交记录详情
+ */
+export const getSubmitRecordDetail = async (
+    courseId: string,
+    studentId: string,
+    examId: string
+): Promise<AssignmentSubmitRecord | null> => {
+  // TODO: 替换为实际 API 调用
+  // const response = await fetch(`${API_BASE_URL}/student/${studentId}/courses/${courseId}/assignment-records/${examId}`);
+  // return response.json();
+
+  // 模拟数据
+  return null;
+};
+
 
 export default {
 

@@ -16,7 +16,8 @@ import {
   FileMarkdownOutlined,
   DownloadOutlined,
   CloseOutlined,
-  InboxOutlined
+  InboxOutlined,
+  CodeOutlined
 } from '@ant-design/icons';
 import {
   deleteKnowledgeFolder,
@@ -106,6 +107,8 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
 
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
+
+  const [loadingIds, setLoadingIds] = useState<(string | number)[]>([]);
 
   const getUserId = (): number | null => {
     if (typeof window === 'undefined') return null;
@@ -366,7 +369,8 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
       render: (_: any, record: KnowledgeFile) => (
           <Button
               type="link"
-              style={{ padding: 0 }}
+              icon={<CodeOutlined />}
+              style={{ padding: 0}}
               onClick={(e) => {
                 e.stopPropagation();
                 const url = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(record.repoFile)}`;
@@ -393,28 +397,49 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
       width: 180,
       render: (_: unknown, record: KnowledgeFile) => (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <Tooltip title={record.enabled ? "关闭文件" : "开启文件"}>
+            <Tooltip title={record.repoStatus === '1' ? "关闭文件" : "开启文件"}>
               <Switch
-                  checked={!!record.enabled}
-                  onChange={async (checked) => {
-                    try {
-                      console.log("当前文件 ID：", record.id);
-                      console.log("当前文件：", record);
-                      message.success(`文件 ${record.id} 已${checked ? "开启" : "关闭"}`);
+                  // 开关状态：1=开启，0=关闭
+                  checked={record.repoStatus === '1'}
 
+                  // 加载中 / 禁用控制
+                  loading={loadingIds.includes(record.id)}
+                  disabled={loadingIds.includes(record.id)}
+
+                  onChange={async (checked) => {
+                    // 开始加载
+                    setLoadingIds([...loadingIds, record.id]);
+
+                    try {
+                      // 新状态：开关打开=1，关闭=0
+                      const newStatus = checked ? '1' : '0';
+
+                      // 调用接口
+                      await KnowLedgeApi.changeRepoStatus(Number(record.id), newStatus);
+
+                      // 前端本地更新状态
                       if (folderDetail) {
                         setFolderDetail({
                           ...folderDetail,
-                          files: folderDetail.repoList.map(f =>
-                              f.id === record.id ? { ...f, enabled: checked } : f
+                          repoList: folderDetail.repoList.map(f =>
+                              f.id === record.id ? { ...f, repoStatus: newStatus } : f
                           )
                         });
                       }
+
+                      // 成功提示
+                      message.success(`文件 ${record.repoTitle} 已${checked ? "开启" : "关闭"}`);
+
                     } catch (err) {
-                      message.error("操作失败");
+                      console.error(err);
+                      message.error("操作失败，请重试");
+
+                    } finally {
+                      // 结束加载（无论成功失败）
+                      setLoadingIds(loadingIds.filter(id => id !== record.id));
                     }
                   }}
-                  style={{ background: record.enabled ? '#1a1a1a' : undefined }}
+
                   size="small"
               />
             </Tooltip>

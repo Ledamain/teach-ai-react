@@ -1,5 +1,72 @@
 // 学生工作台相关类型定义
 
+// ==================== 题目与作业详情类型 ====================
+
+// 题目类型
+export interface Question {
+  id: number;
+  type: 'single' | 'multiple' | 'judge'; // 单选/多选/判断
+  title: string;
+  options: string[];
+  answer: string | string[];
+  score: number;
+  analysis?: string; // 解析
+}
+
+// 作业内容（从content JSON字符串解析）
+export interface AssignmentContent {
+  title: string;
+  description?: string;
+  totalScore: number;
+  questions: Question[];
+}
+
+// 后端返回的作业原始数据结构
+export interface ExerciseApiResponse {
+  id: number;
+  classesId: string;
+  classesIdsList: string[] | null;
+  repoCategoryName: string | null;
+  nickname: string | null;
+  repoCategoryId: number;
+  teacherUserId: number;
+  exerciseName: string;
+  content: string; // JSON字符串，解析后为 AssignmentContent
+  completed: number; // 0: 未提交, 1: 已提交
+  questionCount: number;
+  totalScore: number;
+  startTime: number; // 时间戳
+  endTime: number; // 时间戳
+  status: number; // 1: 进行中, 0: 已结束
+  submissionCount: number;
+  totalStudents: number;
+  createTime: number;
+}
+
+// 单题作答记录
+export interface AnswerRecord {
+  questionId: number;
+  type: 'single' | 'multiple' | 'judge';
+  userAnswer: string | string[];
+  correctAnswer: string | string[];
+  score: number;
+  userScore: number;
+  isCorrect: boolean;
+}
+
+// 作业提交记录（用于存储到后端）
+export interface AssignmentSubmitRecord {
+  examId: string;
+  title: string;
+  totalScore: number;
+  userScore: number;
+  submitStatus: 'completed' | 'in_progress' | 'not_started';
+  submitTime: string;
+  answers: AnswerRecord[];
+}
+
+// ==================== 学生分析数据类型 ====================
+
 // 学生个人学习分析数据
 export interface StudentAnalyticsData {
   studentId: string;
@@ -98,4 +165,6 @@ export interface SubmitResult {
   userScore: number;
   submitTime: string;
   questions: StudentQuestion[];
+  // 完整的提交记录，用于存储到后端
+  submitRecord?: AssignmentSubmitRecord;
 }

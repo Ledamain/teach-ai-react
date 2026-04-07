@@ -1,18 +1,20 @@
 
 // 作业练习类型
+import dayjs, {Dayjs} from "dayjs";
+
 export interface Assignment {
-    id: number;
+    id?: number;
     repoCategoryId: number;
     teacherUserId: number;
-    classesId: number;
+    classesId?: string;
     exerciseName: string;
     description?: string;
-    startDate?: string;
-    dueDate: string;
-    status: 'draft' | 'published' | 'closed';
-    submissionCount: number;
-    totalStudents: number;
-    questions?: Question[]; // 试卷题目
+    startTime?: string;
+    endTime: string;
+    status?: number;
+    submissionCount?: number;
+    totalStudents?: number;
+    content?: string; // 试卷题目
 }
 
 // 题目类型
@@ -58,11 +60,23 @@ export interface StudentSubmission {
 
 // 作业提交情况列表项
 export interface SubmissionListItem {
-    studentId: string;
-    studentName: string;
-    className: string;
-    submitStatus: 'completed' | 'not_submitted';
-    submitTime?: string;
+    studentUserId: string;
+    clientNum: string;
+    exerciseId: number;
+    studentUserName: string;
+    classesName: string;
+    completed: number;
+    updateTime?: string;
     score?: number;
 }
 
+// 作业发布
+export interface PublishData {
+    repoCategoryId: number;
+    id: number;
+    teacherUserId: number;
+    classesId: string;
+    startTime: number;
+    endTime: number;
+    exerciseName: string;
+}

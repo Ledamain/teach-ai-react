@@ -12,7 +12,6 @@ import {
   DownloadOutlined,
   CloseOutlined, DeleteOutlined,
 } from '@ant-design/icons';
-import { getStudentKnowledgeFolderDetail } from '@/api/studentWorkspace';
 import KnowLedgeApi from '@/api/repo/index'
 import {
   KnowledgeFile,

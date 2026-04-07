@@ -32,6 +32,7 @@ export interface KnowledgeFile {
     size: number;
     createTime: string;
     repoFile?: string; // 文件下载地址
+    repoStatus: string
 }
 
 // 知识库文件夹详情类型

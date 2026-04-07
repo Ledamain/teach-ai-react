@@ -97,61 +97,6 @@ export const getCourseAnalytics = async (courseId: string): Promise<AnalyticsDat
 
 // ==================== 学生管理相关 API ====================
 
-/**
- * 获取课程学生列表
- * @param courseId 课程ID
- * @param params 查询参数
- * @returns 学生列表
- */
-// export const getStudentList = async (
-//   courseId: string,
-//   params?: {
-//     keyword?: string;
-//     classId?: string;
-//     page?: number;
-//     pageSize?: number;
-//   }
-// ): Promise<{ list: Student[]; total: number }> => {
-//   // TODO: 替换为实际 API 调用
-//   // const queryString = new URLSearchParams(params as any).toString();
-//   // const response = await fetch(`${API_BASE_URL}/courses/${courseId}/students?${queryString}`);
-//   // return response.json();
-//
-//   // 模拟数据
-//   const mockStudents: Student[] = [
-//     { id: '1', studentId: '2024001', name: '张三', className: '高三(1)班', joinTime: '2024-03-01', questionCount: 28 },
-//     { id: '2', studentId: '2024002', name: '李四', className: '高三(1)班', joinTime: '2024-03-01', questionCount: 35 },
-//     { id: '3', studentId: '2024003', name: '王五', className: '高三(2)班', joinTime: '2024-03-02', questionCount: 22 },
-//     { id: '4', studentId: '2024004', name: '赵六', className: '高三(2)班', joinTime: '2024-03-02', questionCount: 18 },
-//     { id: '5', studentId: '2024005', name: '钱七', className: '高三(3)班', joinTime: '2024-03-03', questionCount: 42 },
-//     { id: '6', studentId: '2024006', name: '孙八', className: '高三(3)班', joinTime: '2024-03-03', questionCount: 31 },
-//     { id: '7', studentId: '2024007', name: '周九', className: '高三(1)班', joinTime: '2024-03-04', questionCount: 25 },
-//     { id: '8', studentId: '2024008', name: '吴十', className: '高三(2)班', joinTime: '2024-03-04', questionCount: 19 },
-//     { id: '1', studentId: '2024001', name: '张三', className: '高三(1)班', joinTime: '2024-03-01', questionCount: 28 },
-//     { id: '2', studentId: '2024002', name: '李四', className: '高三(1)班', joinTime: '2024-03-01', questionCount: 35 },
-//     { id: '3', studentId: '2024003', name: '王五', className: '高三(2)班', joinTime: '2024-03-02', questionCount: 22 },
-//     { id: '4', studentId: '2024004', name: '赵六', className: '高三(2)班', joinTime: '2024-03-02', questionCount: 18 },
-//     { id: '5', studentId: '2024005', name: '钱七', className: '高三(3)班', joinTime: '2024-03-03', questionCount: 42 },
-//     { id: '6', studentId: '2024006', name: '孙八', className: '高三(3)班', joinTime: '2024-03-03', questionCount: 31 },
-//     { id: '7', studentId: '2024007', name: '周九', className: '高三(1)班', joinTime: '2024-03-04', questionCount: 25 },
-//     { id: '8', studentId: '2024008', name: '吴十', className: '高三(2)班', joinTime: '2024-03-04', questionCount: 19 },
-//   ];
-//
-//   let filteredList = [...mockStudents];
-//
-//   if (params?.keyword) {
-//     const keyword = params.keyword.toLowerCase();
-//     filteredList = filteredList.filter(
-//       s => s.name.toLowerCase().includes(keyword) || s.studentId.includes(keyword)
-//     );
-//   }
-//
-//   if (params?.classId) {
-//     filteredList = filteredList.filter(s => s.className === params.classId);
-//   }
-//
-//   return { list: filteredList, total: filteredList.length };
-// };
 
 /**
  * 获取学生详情
