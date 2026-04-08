@@ -6,10 +6,9 @@ import { CheckOutlined } from "@ant-design/icons";
 import styles from "../../styles/login/index.module.css";
 import { useRouter } from "next/router";
 import { login } from "@/api/login";
-import { Fireworks } from '@fireworks-js/react'
-import type { FireworksHandlers } from '@fireworks-js/react'
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
 
 const { Title, Text } = Typography;
 
@@ -83,14 +82,44 @@ export default function Home() {
     const router = useRouter();
     const [isSuccess, setIsSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
-    const fireworksRef = useRef<FireworksHandlers>(null);
 
-    const fireFireworks = () => {
-        if (fireworksRef.current) {
-            if (!fireworksRef.current.isRunning) {
-                fireworksRef.current.start();
-            }
-        }
+    // 登录成功礼花动画（和你Vue效果完全一致）
+    const playConfetti = () => {
+        const duration = 3000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999 };
+
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+        // 左侧礼花 向右发射
+        const leftInterval = setInterval(() => {
+            const timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) return clearInterval(leftInterval);
+            const particleCount = 50 * (timeLeft / duration);
+
+            confetti({
+                ...defaults,
+                origin: { x: 0, y: 0.5 },
+                particleCount,
+                angle: randomInRange(0, 60),
+                colors: ['#FF3E4D', '#FF9F1C', '#FFCC00', '#FFEA00']
+            });
+        }, 250);
+
+        // 右侧礼花 向左发射
+        const rightInterval = setInterval(() => {
+            const timeLeft = animationEnd - Date.now();
+            if (timeLeft <= 0) return clearInterval(rightInterval);
+            const particleCount = 50 * (timeLeft / duration);
+
+            confetti({
+                ...defaults,
+                origin: { x: 1, y: 0.5 },
+                particleCount,
+                angle: randomInRange(120, 180),
+                colors: ['#00CFFD', '#04E762', '#AA00FF', '#00B4D8']
+            });
+        }, 250);
     };
 
     const handleFinish = async (values: { username: string; password: string }) => {
@@ -100,7 +129,7 @@ export default function Home() {
             setIsSuccess(true);
 
             setTimeout(() => {
-                fireFireworks();
+                playConfetti(); // 播放新礼花效果
             }, 50);
 
             setTimeout(() => {
@@ -116,44 +145,6 @@ export default function Home() {
 
     return (
         <div className={`${geistSans.className} ${geistMono.className} ${styles.pageWrapper}`}>
-
-            {/* 烟花效果 */}
-            {isSuccess && (
-                <Fireworks
-                    ref={fireworksRef}
-                    options={{
-                        opacity: 0.9,
-                        acceleration: 1.05,
-                        friction: 0.98,
-                        gravity: 1.5,
-                        particles: 150,
-                        traceLength: 3,
-                        traceSpeed: 10,
-                        explosion: 6,
-                        intensity: 30,
-                        flickering: 50,
-                        lineStyle: 'round',
-                        hue: { min: 0, max: 360 },
-                        delay: { min: 30, max: 60 },
-                        rocketsPoint: { min: 50, max: 50 },
-                        lineWidth: { explosion: { min: 1, max: 3 }, trace: { min: 1, max: 2 } },
-                        brightness: { min: 50, max: 80 },
-                        decay: { min: 0.015, max: 0.03 },
-                        mouse: { click: false, move: false, max: 1 }
-                    }}
-                    style={{
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        position: 'fixed',
-                        background: 'rgba(0, 0, 0, 0.1)',
-                        zIndex: 999,
-                        pointerEvents: 'none'
-                    }}
-                />
-            )}
-
             <motion.div
                 className={styles.loginCard}
                 initial="hidden"
