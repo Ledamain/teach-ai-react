@@ -15,6 +15,7 @@ export interface Assignment {
     submissionCount?: number;
     totalStudents?: number;
     content?: string; // 试卷题目
+    userScore?: number;
 }
 
 // 题目类型
@@ -47,6 +48,16 @@ export interface StudentAnswer {
     isCorrect: boolean;
 }
 
+// 学生作答初始数据
+export interface StudentAnswerInit {
+    id: number;
+    exerciseId: number;
+    studentUserId: number;
+    transcript: string;
+    completed: number;
+    createTime: number;
+}
+
 // 学生作答详情
 export interface StudentSubmission {
     examId: string;
@@ -60,6 +71,7 @@ export interface StudentSubmission {
 
 // 作业提交情况列表项
 export interface SubmissionListItem {
+    id: number;
     studentUserId: string;
     clientNum: string;
     exerciseId: number;

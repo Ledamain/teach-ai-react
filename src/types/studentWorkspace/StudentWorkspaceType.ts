@@ -41,6 +41,7 @@ export interface ExerciseApiResponse {
   submissionCount: number;
   totalStudents: number;
   createTime: number;
+  userScore?: number;
 }
 
 // 单题作答记录
@@ -135,7 +136,7 @@ export interface StudentQuestion {
 
 // 学生作业详情（答题用）
 export interface StudentAssignmentDetail {
-  id: string;
+  id: number;
   title: string;
   description?: string;
   totalScore: number;

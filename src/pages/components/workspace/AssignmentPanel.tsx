@@ -31,12 +31,8 @@ import {
 } from '@ant-design/icons';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
-import type {
-  ClassInfo
-} from '@/types/workspace/CourseDetailType';
 import styles from '@/styles/workspace/courseDetail.module.css';
 import {AssignmentDetail,Assignment,  Question, StudentSubmission, SubmissionListItem, PublishData} from "@/types/assignment/AssignmentType";
-import {getStudentSubmission} from "@/api/assignment";
 import AssignmentApi from '@/api/assignment/index'
 import ClassesApi from '@/api/classes/index'
 import {UserInfo} from "@/types/login/LoginType";
@@ -295,7 +291,7 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
     setStudentDetailModalVisible(true);
     
     try {
-      const submission = await getStudentSubmission(courseId, currentAssignment.id, student.studentId);
+      const submission = await AssignmentApi.getStudentSubmission(student.id);
       setStudentSubmission(submission);
     } catch (error) {
       console.error('获取学生作答详情失败:', error);
@@ -423,9 +419,9 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
       title: '得分',
       dataIndex: 'score',
       key: 'score',
-      width: 80,
+      width: 100,
       render: (score?: number) => score !== undefined ? (
-        <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{score}</span>
+        <span style={{ fontWeight: 600, color: '#1a1a1a' }}>{score === null ? '无成绩' : score}</span>
       ) : '-',
     },
     {
@@ -920,7 +916,6 @@ const AssignmentPanel: React.FC<AssignmentPanelProps> = ({ courseId }) => {
                 });
 
                 return (
-                    // ✅ 筛选动画（和你给的学生页面完全一样的动画）
                     <AnimatePresence mode="popLayout">
                       <motion.div
                           key={`${searchKeyword}-${searchClass}-${searchStatus}`}

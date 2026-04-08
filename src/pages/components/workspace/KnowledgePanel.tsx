@@ -29,12 +29,10 @@ import {
   KnowledgeFile,
   KnowledgeFolder,
   KnowledgeFolderDetail,
-  KnowLedgeFolderParams
+  KnowLedgeFolderParams, KnowledgeFolderUploadParams
 } from "@/types/repo/RepoType";
 import {
   deleteKnowledgeFile,
-  updateKnowledgeFolderStatus,
-  uploadKnowledgeFileWithDesc
 } from "@/api/repo";
 import {Course} from "@/types/workspace/WorkspaceType";
 import {UserInfo} from "@/types/login/LoginType";
@@ -48,7 +46,6 @@ interface KnowledgePanelProps {
 
 // 根据文件类型获取图标
 const getFileIcon = (type: string | undefined | null) => {
-  // 处理 undefined / null 情况
   const fileType = type?.toLowerCase() || '';
 
   switch (fileType) {
@@ -89,7 +86,7 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
       {
         repoGroupName: '',
         repoGroupDescription: '',
-        repoCategoryId: Number(courseId) // 课程ID转数字
+        repoCategoryId: Number(courseId)
       }
   )
   const [currentFolder, setCurrentFolder] = useState<KnowledgeFolder | null>(null);
@@ -101,9 +98,11 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
 
   // 上传文件弹窗状态
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [repoDesp, setRepoDesp] = useState('');
   const [uploadLoading, setUploadLoading] = useState(false);
+
+  // 存储上传后返回的文件地址
+  const [fileUrl, setFileUrl] = useState('');
 
   const [previewVisible, setPreviewVisible] = useState(false);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -157,13 +156,11 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
     }
 
     try {
-      // ✅ 直接传递 folderForm
       await KnowLedgeApi.createKnowledgeFolder(folderForm);
 
       message.success('创建成功');
       setCreateModalVisible(false);
 
-      // 重置表单
       setFolderForm({
         repoGroupName: '',
         repoGroupDescription: '',
@@ -224,7 +221,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
     setRenameModalVisible(true);
   };
 
-  // 点击文件夹卡片，打开详情弹窗
   const handleFolderClick = async (folder: KnowledgeFolder) => {
     setCurrentFolder(folder);
     setDetailLoading(true);
@@ -241,64 +237,62 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
     }
   };
 
-  // 切换开启状态
-  const handleToggleStatus = async (checked: boolean) => {
-    if (!folderDetail) return;
-
-    try {
-      await updateKnowledgeFolderStatus(courseId, folderDetail.id, checked);
-      setFolderDetail({ ...folderDetail, enabled: checked });
-      message.success(checked ? '已开启' : '已关闭');
-    } catch (error) {
-      console.error('更新状态失败:', error);
-      message.error('更新状态失败');
-    }
-  };
-
-  // 打开上传文件弹窗
   const handleOpenUploadModal = () => {
     setUploadModalVisible(true);
   };
 
-  // 处理文件上传
+  // ==============================================
+  // 🔥 核心修改：最终提交上传（文件地址 + 描述 + ID）
+  // ==============================================
   const handleUpload = async () => {
-    if (!uploadFile || !folderDetail) {
-      message.warning('请选择要上传的文件');
+    if (!fileUrl) {
+      message.warning('请先上传文件');
+      return;
+    }
+    if (!folderDetail) {
+      message.warning('未找到文件夹信息');
       return;
     }
 
     setUploadLoading(true);
     try {
-      const newFile = await uploadKnowledgeFileWithDesc(
-          courseId,
-          folderDetail.id,
-          uploadFile,
-          repoDesp,
-          courseId, // repoCategoryId - 学科ID
-          folderDetail.id // repoGroupId - 学科文件夹ID
-      );
+      // 调用后端保存接口
+      const splitArr = fileUrl.split('/');
+      const title = splitArr[splitArr.length - 1];
+      const submitData: KnowledgeFolderUploadParams =  {
+        repoTitle: title,
+        repoCategoryId: courseId,
+        repoGroupId: Number(folderDetail.id),
+        repoDesp: repoDesp,
+        fileUrl: fileUrl,
+      }
+      await KnowLedgeApi.uploadKnowledgeFileWithDesc(submitData); // 这里不需要接收 newFile
 
-      // 更新文件列表
-      setFolderDetail({
-        ...folderDetail,
-        files: [...folderDetail.repoList, newFile],
-        fileCount: folderDetail.fileCount + 1,
-      });
+      // 前端刷新列表 —— 直接用接口返回的完整数据
+      setDetailLoading(true);
+      try {
+        const detail = await KnowLedgeApi.getKnowledgeFolderDetail(courseId, folderDetail.id);
+        setFolderDetail(detail); // 这一行就够了
+      } catch (error) {
+        console.error('获取文件夹详情失败:', error);
+        message.error('获取文件夹详情失败');
+      } finally {
+        setDetailLoading(false);
+      }
 
-      message.success('上传成功');
+      message.success('上传保存成功');
       setUploadModalVisible(false);
-      setUploadFile(null);
+      setFileUrl('');
       setRepoDesp('');
-      fetchFolders(); // 刷新文件夹列表以更新文件数
+      fetchFolders();
     } catch (error) {
-      console.error('上传失败:', error);
-      message.error('上传失败');
+      console.error('保存失败:', error);
+      message.error('保存失败');
     } finally {
       setUploadLoading(false);
     }
   };
 
-  // 删除文件
   const handleDeleteFile = async (fileId: string) => {
     if (!folderDetail) return;
 
@@ -306,7 +300,7 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
       await deleteKnowledgeFile(courseId, folderDetail.id, fileId);
       setFolderDetail({
         ...folderDetail,
-        files: folderDetail.repoList.filter(f => f.id !== fileId),
+        repoList: folderDetail.repoList.filter(f => f.id !== fileId),
         fileCount: folderDetail.fileCount - 1,
       });
       message.success('删除成功');
@@ -317,29 +311,36 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
     }
   };
 
-  // 下载文件
   const handleDownload = (file: KnowledgeFile) => {
-    // 模拟下载
     message.info(`正在下载: ${file.repoTitle}`);
-    // 实际实现：window.open(file.url, '_blank');
   };
 
-  // 上传组件配置
+  // ==============================================
   const uploadProps: UploadProps = {
     name: 'file',
     multiple: false,
     accept: '.doc,.docx,.ppt,.pptx,.txt,.md',
-    beforeUpload: (file) => {
-      setUploadFile(file);
-      return false; // 阻止自动上传
+    // 启用自动上传
+    action: `${process.env.NEXT_PUBLIC_API_URL_LOC}/admin-api/infra/file/upload`,
+    // 上传成功后拿到文件地址
+    onChange(info) {
+      if (info.file.status === 'done') {
+        // 假设后端返回 { url: "xxx" }
+        const resUrl = info.file.response?.data;
+        if (resUrl) {
+          setFileUrl(resUrl);
+          message.success('文件上传成功');
+        }
+      } else if (info.file.status === 'error') {
+        message.error('文件上传失败');
+      }
     },
-    onRemove: () => {
-      setUploadFile(null);
+    // 移除文件清空地址
+    onRemove() {
+      setFileUrl('');
     },
-    fileList: uploadFile ? [{ uid: '-1', name: uploadFile.name, status: 'done' }] : [],
   };
 
-  // 文件列表表格列配置
   const fileColumns = [
     {
       title: '文件名',
@@ -399,25 +400,14 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <Tooltip title={record.repoStatus === '1' ? "关闭文件" : "开启文件"}>
               <Switch
-                  // 开关状态：1=开启，0=关闭
                   checked={record.repoStatus === '1'}
-
-                  // 加载中 / 禁用控制
                   loading={loadingIds.includes(record.id)}
                   disabled={loadingIds.includes(record.id)}
-
                   onChange={async (checked) => {
-                    // 开始加载
                     setLoadingIds([...loadingIds, record.id]);
-
                     try {
-                      // 新状态：开关打开=1，关闭=0
                       const newStatus = checked ? '1' : '0';
-
-                      // 调用接口
                       await KnowLedgeApi.changeRepoStatus(Number(record.id), newStatus);
-
-                      // 前端本地更新状态
                       if (folderDetail) {
                         setFolderDetail({
                           ...folderDetail,
@@ -426,20 +416,14 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
                           )
                         });
                       }
-
-                      // 成功提示
                       message.success(`文件 ${record.repoTitle} 已${checked ? "开启" : "关闭"}`);
-
                     } catch (err) {
                       console.error(err);
                       message.error("操作失败，请重试");
-
                     } finally {
-                      // 结束加载（无论成功失败）
                       setLoadingIds(loadingIds.filter(id => id !== record.id));
                     }
                   }}
-
                   size="small"
               />
             </Tooltip>
@@ -460,7 +444,7 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
                     }
                   }}
               />
-              </Tooltip>
+            </Tooltip>
 
             <Popconfirm
                 title="确定要删除该文件吗？"
@@ -482,7 +466,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
 
   return (
       <div className={styles.knowledgeContainer}>
-        {/* 工具栏 */}
         <motion.div
             className={styles.knowledgeToolbar}
             initial={{ opacity: 0, y: -10 }}
@@ -503,7 +486,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
           </Button>
         </motion.div>
 
-        {/* 文件夹列表 */}
         {loading ? (
             <div>加载中...</div>
         ) : folders.length === 0 ? (
@@ -572,7 +554,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
             </div>
         )}
 
-        {/* 创建文件夹弹窗 */}
         <Modal
             title="新建文件夹"
             open={createModalVisible}
@@ -597,7 +578,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
               style={{ marginBottom: 12 }}
           />
 
-          {/* 文件夹描述 */}
           <Input
               placeholder="请输入文件夹描述"
               value={folderForm.repoGroupDescription}
@@ -610,7 +590,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
           />
         </Modal>
 
-        {/* 重命名弹窗 */}
         <Modal
             title="修改文件夹信息"
             open={renameModalVisible}
@@ -623,7 +602,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
             okText="确定"
             cancelText="取消"
         >
-          {/* 文件夹名称 */}
           <Input
               placeholder="请输入新的文件夹名称"
               value={folderForm.repoGroupName}
@@ -636,7 +614,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
               style={{ marginBottom: 12 }}
           />
 
-          {/* 文件夹描述 */}
           <Input
               placeholder="请输入文件夹描述"
               value={folderForm.repoGroupDescription}
@@ -649,7 +626,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
           />
         </Modal>
 
-        {/* 文件夹详情弹窗 */}
         <Modal
             title={null}
             open={detailModalVisible}
@@ -672,7 +648,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25 }}
               >
-                {/* 头部信息 */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'flex-start',
@@ -715,7 +690,6 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
                   </div>
                 </div>
 
-                {/* 文件列表 */}
                 {folderDetail.repoList.length === 0 ? (
                     <Empty
                         description="暂无文件，点击上方按钮上传"
@@ -745,10 +719,10 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
             onOk={handleUpload}
             onCancel={() => {
               setUploadModalVisible(false);
-              setUploadFile(null);
+              setFileUrl('');
               setRepoDesp('');
             }}
-            okText="确定"
+            okText="确定保存"
             cancelText="取消"
             confirmLoading={uploadLoading}
             okButtonProps={{ style: { background: '#1a1a1a', borderColor: '#1a1a1a' } }}
@@ -763,6 +737,13 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
                 支持 docx、doc、ppt、pptx、txt、md 格式文件
               </p>
             </Dragger>
+
+            {/* 显示已上传的文件地址 */}
+            {fileUrl && (
+                <div style={{ marginTop: 10, color: '#52c41a' }}>
+                  文件上传完成：{fileUrl}
+                </div>
+            )}
           </div>
 
           <div>
@@ -777,6 +758,7 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
             />
           </div>
         </Modal>
+
         <Modal
             title="文件预览"
             open={previewVisible}

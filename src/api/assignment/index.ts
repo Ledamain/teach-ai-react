@@ -1,70 +1,17 @@
-
 // ==================== 作业练习相关 API ====================
-
 import {
     Assignment,
     AssignmentDetail,
-    PublishData,
+    PublishData, StudentAnswerInit,
     StudentSubmission,
     SubmissionListItem
 } from "@/types/assignment/AssignmentType";
 import {request} from "@/utils/request";
-import {CLassesType} from "@/types/classes/ClassesType";
 import {
-    StudentAssignment,
+    AssignmentContent,
+    ExerciseApiResponse,
     StudentAssignmentDetail,
-    StudentAssignmentParams,
-    StudentSubmitData,
-    SubmitResult
 } from "@/types/studentWorkspace/StudentWorkspaceType";
-import {getStudentAssignmentDetail} from "@/api/studentWorkspace";
-/**
- * 创建作业
- * @param courseId 课程ID
- * @param assignmentData 作业数据
- */
-export const createAssignment = async (
-    courseId: string,
-    assignmentData: Omit<Assignment, 'id' | 'submissionCount'>
-): Promise<Assignment> => {
-    // TODO: 替换为实际 API 调用
-    // const response = await fetch(`${API_BASE_URL}/courses/${courseId}/assignments`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(assignmentData),
-    // });
-    // return response.json();
-
-    return {
-        ...assignmentData,
-        id: Date.now().toString(),
-        submissionCount: 0,
-    };
-};
-
-/**
- * 更新作业
- * @param courseId 课程ID
- * @param assignmentId 作业ID
- * @param assignmentData 作业数据
- */
-export const updateAssignment = async (
-    courseId: string,
-    assignmentId: string,
-    assignmentData: Partial<Assignment>
-): Promise<Assignment> => {
-    // TODO: 替换为实际 API 调用
-    // const response = await fetch(`${API_BASE_URL}/courses/${courseId}/assignments/${assignmentId}`, {
-    //   method: 'PATCH',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(assignmentData),
-    // });
-    // return response.json();
-
-    console.log('更新作业:', courseId, assignmentId, assignmentData);
-    return { ...assignmentData, id: assignmentId } as Assignment;
-};
-
 /**
  * 删除作业
  * @param courseId 课程ID
@@ -80,40 +27,6 @@ export const deleteAssignment = async (courseId: string, assignmentId: string): 
 };
 
 // ==================== 作业详情与作答相关 API ====================
-/**
- * 获取学生作答详情
- * @param courseId 课程ID
- * @param assignmentId 作业ID
- * @param studentId 学生ID
- */
-export const getStudentSubmission = async (
-    courseId: string,
-    assignmentId: string,
-    studentId: string
-): Promise<StudentSubmission> => {
-    // TODO: 替换为实际 API 调用
-    // const response = await fetch(`${API_BASE_URL}/courses/${courseId}/assignments/${assignmentId}/submissions/${studentId}`);
-    // return response.json();
-
-    // 模拟数据 - 使用用户提供的作答格式
-    return {
-        examId: 'frontend-basic-test-001',
-        title: '前端基础综合测验',
-        totalScore: 100,
-        userScore: 80,
-        submitStatus: 'completed',
-        submitTime: '2026-04-04 15:30:22',
-        answers: [
-            { questionId: 1, type: 'single', userAnswer: 'String', correctAnswer: 'String', score: 10, userScore: 10, isCorrect: true },
-            { questionId: 2, type: 'single', userAnswer: '<div>', correctAnswer: '<p>', score: 10, userScore: 0, isCorrect: false },
-            { questionId: 3, type: 'single', userAnswer: 'color', correctAnswer: 'color', score: 10, userScore: 10, isCorrect: true },
-            { questionId: 4, type: 'multiple', userAnswer: ['margin', 'padding', 'border'], correctAnswer: ['margin', 'padding', 'border', 'content'], score: 20, userScore: 15, isCorrect: false },
-            { questionId: 5, type: 'multiple', userAnswer: ['GET', 'POST', 'DELETE'], correctAnswer: ['GET', 'POST', 'DELETE'], score: 20, userScore: 20, isCorrect: true },
-            { questionId: 6, type: 'judge', userAnswer: '错误', correctAnswer: '错误', score: 10, userScore: 10, isCorrect: true },
-            { questionId: 7, type: 'judge', userAnswer: '错误', correctAnswer: '正确', score: 10, userScore: 0, isCorrect: false },
-        ]
-    };
-}
 export default {
     /**
      * 创建作业
@@ -175,24 +88,95 @@ export default {
      * @returns 作业列表
      */
     getStudentAssignmentList(repoCategoryId: number,studentUserId:number){
-        return request.get<Assignment[]>('/exercise/student/list',{
+        return request.get<ExerciseApiResponse[]>('/exercise/student/list',{
             params: {
                 repoCategoryId: repoCategoryId,
                 studentUserId: studentUserId
             }
         })
     },
-    getStudentAssignmentDetail(assignmentId: number, studentUserId: number){
-        if (assignmentId === 1 || assignmentId === 4) {
+    getStudentAssignment(assignmentId: number, studentUserId: number) {
+        return request.get<ExerciseApiResponse>('/exercise/get-student', {
+            params: {
+                id: assignmentId,
+                studentUserId: studentUserId
+            }
+        })
+    },
+    /**
+     * 获取学生作业详情
+     * @param courseId 课程ID
+     * @param assignmentId 作业ID
+     * @param studentId 学生ID
+     * @returns 作业详情
+     */
+    async getStudentAssignmentDetail(
+        assignmentId: string,
+        studentId: string
+    ): Promise<StudentAssignmentDetail> {
+        try {
+            const data = await this.getStudentAssignment(
+                Number(assignmentId),
+                Number(studentId)
+            );
 
-        }else {
-            return request.get<StudentAssignment>('/exercise/get-student',{
-                params: {
-                    id: assignmentId,
-                    studentUserId: studentUserId
-                }
-            });
+            // 安全解析 JSON
+            const contentData: AssignmentContent = data.content
+                ? JSON.parse(data.content)
+                : { description: '', questions: [] };
+
+            // 普通函数
+            function formatTimestamp(timestamp?: number): string {
+                if (!timestamp) return '';
+                const date = new Date(timestamp);
+                if (isNaN(date.getTime())) return '';
+                return date.toISOString().replace('T', ' ').slice(0, 16);
+            }
+
+            return {
+                id: String(data.id),
+                title: data.exerciseName,
+                description: contentData.description,
+                totalScore: data.totalScore,
+                status: data.status === 1 ? 'published' : 'closed',
+                startDate: formatTimestamp(data.startTime),
+                dueDate: formatTimestamp(data.endTime),
+                submitStatus: data.completed === 1 ? 'completed' : 'not_started',
+                questions: contentData.questions || [],
+                userScore: data.userScore,
+            };
+        } catch (err) {
+            console.error('获取学生作业详情失败：', err);
+            throw err;
         }
+    },
+    /**
+     * 保存作业提交记录到后端
+     * @param courseId 课程ID
+     * @param studentId 学生ID
+     * @param submitRecord 完整的提交记录
+     * @returns 保存结果
+     */
+    saveAssignmentSubmitRecord(exerciseId: number, studentUserId: number, submitRecord: string){
+        return request.put<boolean>('/exercise/student/update-result',{
+            id: Number(exerciseId),
+            studentUserId: studentUserId,
+            transcript: submitRecord
+        });
+    },
+    /**
+     * 获取学生作答详情
+     * @param courseId 课程ID
+     * @param assignmentId 作业ID
+     * @param studentId 学生ID
+     */
+    async getStudentSubmission(assignmentResultId: number){
+        const init: StudentAnswerInit = await request.get<StudentAnswerInit>('/exercise/get-result', {
+            params: {
+                id: assignmentResultId
+            }
+        });
+        const submit: StudentSubmission = JSON.parse(init.transcript);
+        return submit;
     }
-
 }

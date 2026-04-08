@@ -12,17 +12,13 @@ import {
   SendOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import {
-  getStudentAssignmentDetail,
-  saveAssignmentSubmitRecord,
-} from '@/api/studentWorkspace';
 import AssignmentApi from '@/api/assignment/index'
-import type {
+import {
   StudentAssignment,
   StudentAssignmentDetail,
   StudentQuestion,
   AssignmentSubmitRecord,
-  AnswerRecord,
+  AnswerRecord, ExerciseApiResponse,
 } from '@/types/studentWorkspace/StudentWorkspaceType';
 import styles from '@/styles/studentWorkspace/index.module.css';
 import {Assignment} from "@/types/assignment/AssignmentType";
@@ -47,7 +43,7 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
                                                                          courseId,
                                                                          studentId,
                                                                        }) => {
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<ExerciseApiResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
   // 作业详情/答题弹窗
@@ -80,20 +76,20 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
     fetchAssignments();
   }, [fetchAssignments]);
 
-  const getStatusText = (status: string, submitStatus: string) => {
-    if (status === 'closed') return '已结束';
-    if (submitStatus === 'completed') return '已提交';
-    if (submitStatus === 'in_progress') return '答题中';
+  const getStatusText = (status: number, completed: number) => {
+    if (status === 2) return '已结束';
+    if (completed === 1) return '已提交';
+    if (completed === 0) return '未提交';
     return '进行中';
   };
 
-  const getStatusClass = (status: string, submitStatus: string) => {
-    if (status === 'closed') return styles.statusClosed;
-    if (submitStatus === 'completed') return styles.statusCompleted;
+  const getStatusClass = (status: number, completed: number) => {
+    if (status === 0) return styles.statusClosed;
+    if (completed === 1) return styles.statusCompleted;
     return styles.statusPublished;
   };
 
-  const formatDate = (dateStr: string) => {
+  const formatDate = (dateStr: number) => {
     return dayjs(dateStr).format('MM-DD HH:mm');
   };
 
@@ -107,13 +103,15 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
 
     try {
       // 调用 API: GET /exercise/get-student?id={assignmentId}&studentUserId={studentId}
-      const detail = await getStudentAssignmentDetail(assignment.id, studentId);
+      const detail = await AssignmentApi.getStudentAssignmentDetail(assignment.id, studentId);
       setAssignmentDetail(detail);
 
       // 根据 completed 状态（submitStatus）判断是否显示结果
       // 如果已提交，直接显示结果（包含答案和解析）
       if (detail.submitStatus === 'completed') {
         setShowResult(true);
+      } else {
+        setShowResult(false); // 确保未提交时一定是 false
       }
     } catch (error) {
       console.error('获取作业详情失败:', error);
@@ -241,9 +239,9 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
       // 保存提交记录到后端
       // TODO: 实际项目中替换为真实API调用
       // await request.post('/exercise/submit', submitRecord);
-      const saveResult = await saveAssignmentSubmitRecord(courseId, studentId, submitRecord);
+      const saveResult = await AssignmentApi.saveAssignmentSubmitRecord(assignmentDetail.id, Number(studentId),JSON.stringify(submitRecord, null, 2));
 
-      if (saveResult.success) {
+      if (saveResult !== null) {
         message.success('提交成功');
 
         // 更新详情以显示结果（此时才展示答案和解析）
@@ -258,7 +256,7 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
         setShowResult(true);
         fetchAssignments(); // 刷新列表
       } else {
-        message.error(saveResult.message || '提交失败');
+        message.error('提交失败');
       }
     } catch (error) {
       console.error('提交失败:', error);
@@ -395,9 +393,9 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
           </div>
           <div className={styles.assignmentStats}>
           <span>
-            进行中: {assignments.filter((a) => a.status === 'published').length}
+            进行中: {assignments.filter((a) => a.status === 1).length}
           </span>
-            <span>已结束: {assignments.filter((a) => a.status === 'closed').length}</span>
+            <span>已结束: {assignments.filter((a) => a.status === 1).length}</span>
           </div>
         </motion.div>
 
@@ -429,34 +427,34 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
                     >
                       <div className={styles.assignmentCardHeader}>
                         <div>
-                          <div className={styles.assignmentName}>{assignment.title}</div>
-                          {assignment.description && (
-                              <div className={styles.assignmentDesc}>{assignment.description}</div>
+                          <div className={styles.assignmentName}>{assignment.exerciseName}</div>
+                          {assignment.repoCategoryName && (
+                              <div className={styles.assignmentDesc}>{assignment.repoCategoryName}</div>
                           )}
                         </div>
                         <span
                             className={`${styles.assignmentStatus} ${getStatusClass(
                                 assignment.status,
-                                assignment.submitStatus
+                                assignment.completed
                             )}`}
                         >
-                    {getStatusText(assignment.status, assignment.submitStatus)}
+                    {getStatusText(assignment.status, assignment.completed)}
                   </span>
                       </div>
                       <div className={styles.assignmentMeta}>
                         <div className={styles.assignmentMetaItem}>
                           <CalendarOutlined className={styles.assignmentMetaIcon} />
-                          <span>开始: {formatDate(assignment.startDate)}</span>
+                          <span>开始: {formatDate(assignment.startTime)}</span>
                         </div>
                         <div className={styles.assignmentMetaItem}>
                           <ClockCircleOutlined className={styles.assignmentMetaIcon} />
-                          <span>截止: {formatDate(assignment.dueDate)}</span>
+                          <span>截止: {formatDate(assignment.endTime)}</span>
                         </div>
                       </div>
                       <div className={styles.assignmentFooter}>
                         <span>{assignment.questionCount} 道题</span>
                         <span>满分 {assignment.totalScore} 分</span>
-                        {assignment.submitStatus === 'completed' && (
+                        {assignment.completed === 1 && (
                             <span className={styles.userScore}>
                       得分: <strong>{assignment.userScore}</strong>
                     </span>

@@ -4,7 +4,8 @@
  */
 
 import {
-  AssignmentSubmitRecord,
+  AssignmentContent,
+  AssignmentSubmitRecord, ExerciseApiResponse,
   StudentAnalyticsData,
   StudentAssignment,
   StudentAssignmentDetail, StudentAssignmentParams,
