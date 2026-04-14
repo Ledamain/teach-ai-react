@@ -1,169 +1,74 @@
-/* OpenAI 风格登录页面 */
+/* 全屏包裹层 */
 .pageWrapper {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #f7f7f8;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     padding: 20px;
-    position: relative;
-    overflow: hidden;
 }
 
-/* 背景装饰 - 渐变光晕 */
-.pageWrapper::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 30% 30%, rgba(0, 0, 0, 0.02) 0%, transparent 50%),
-    radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.015) 0%, transparent 50%);
-    pointer-events: none;
-    animation: bgFloat 20s ease-in-out infinite;
-}
-
-@keyframes bgFloat {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(2%, 2%) rotate(1deg); }
-}
-
+/* 登录卡片 */
 .loginCard {
     width: 100%;
-    max-width: 400px;
-    background: #ffffff;
-    padding: 48px 40px;
-    border-radius: 20px;
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(0, 0, 0, 0.03);
+    max-width: 420px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 40px;
     position: relative;
-    z-index: 1;
 }
 
+/* 头部区域 */
 .header {
     text-align: center;
-    margin-bottom: 40px;
-}
-
-.logoWrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
     margin-bottom: 32px;
 }
 
-.logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-}
-
-.logoText {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1a1a1a;
-    letter-spacing: -0.3px;
-}
-
 .title {
-    margin-top: 0 !important;
-    margin-bottom: 12px !important;
-    font-weight: 600 !important;
     font-size: 24px !important;
+    font-weight: 600 !important;
     color: #1a1a1a !important;
-    letter-spacing: -0.5px;
+    margin-bottom: 8px !important;
 }
 
 .subtitle {
-    font-size: 15px !important;
-    color: #86868b !important;
-    line-height: 1.5;
-}
-
-.form :global(.ant-form-item) {
-    margin-bottom: 20px;
-}
-
-.form :global(.ant-form-item-label > label) {
-    font-weight: 500;
     font-size: 14px;
-    color: #1a1a1a;
+    color: #86868b;
+}
+
+/* 表单 */
+.form {
+    width: 100%;
 }
 
 .input {
-    height: 48px !important;
-    border-radius: 12px !important;
-    border: 1px solid #eef0f2 !important;
-    background: #fcfcfd !important;
-    font-size: 15px !important;
-    padding: 0 16px !important;
-    transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1) !important;
-}
-
-.input:hover {
-    border-color: #d1d5db !important;
-    background: #ffffff !important;
-}
-
-.input:focus,
-.input:global(.ant-input-focused) {
-    border-color: #1a1a1a !important;
-    background: #ffffff !important;
-    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08) !important;
-}
-
-/* 密码输入框特殊处理 */
-.input:global(.ant-input-password) {
-    padding: 0 !important;
-}
-
-.input:global(.ant-input-password) input {
-    height: 46px !important;
-    padding: 0 16px !important;
-    background: transparent !important;
+    height: 48px;
+    border-radius: 10px;
+    font-size: 15px;
 }
 
 .buttonItem {
-    margin-top: 32px;
-    margin-bottom: 0;
+    margin-bottom: 16px;
 }
 
 .submitBtn {
-    height: 52px !important;
-    border-radius: 12px !important;
-    font-weight: 600 !important;
-    font-size: 16px !important;
+    height: 48px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 500;
     background: #1a1a1a !important;
-    border: none !important;
-    transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+    border-color: #1a1a1a !important;
 }
 
 .submitBtn:hover {
-    background: #333333 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16) !important;
+    background: #333 !important;
+    border-color: #333 !important;
 }
 
-.submitBtn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
-}
-
-.submitBtn:global(.ant-btn-loading) {
-    background: #333333 !important;
-    opacity: 0.9;
-}
-
+/* 注册链接 */
 .registerLink {
-    display: block;
     text-align: center;
-    margin-top: 20px;
-}
-
-.registerLink span {
     font-size: 14px;
     color: #86868b;
 }
@@ -171,75 +76,74 @@
 .registerLink a {
     color: #1a1a1a;
     font-weight: 500;
-    text-decoration: none;
     margin-left: 4px;
-    transition: color 0.2s ease;
+    text-decoration: none;
 }
 
 .registerLink a:hover {
-    color: #5e5e66;
+    text-decoration: underline;
 }
 
-.footer {
-    margin-top: 40px;
-    text-align: center;
-    padding-top: 24px;
-    border-top: 1px solid #eef0f2;
-}
-
-.footerText {
-    font-size: 12px !important;
-    color: #86868b !important;
-}
-
-/* 成功状态样式 */
+/* 成功状态 */
 .successWrapper {
-    text-align: center;
-    padding: 40px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
 }
 
 .successIcon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 24px;
-    background: #1a1a1a;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
+    background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ffffff;
-    font-size: 28px;
+    color: #fff;
+    font-size: 36px;
+    margin-bottom: 24px;
 }
 
 .successTitle {
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 600;
     color: #1a1a1a;
     margin-bottom: 8px;
 }
 
 .successSubtitle {
-    font-size: 15px;
+    font-size: 14px;
     color: #86868b;
 }
 
-/* 分割线 */
-.divider {
+/* 底部 */
+.footer {
+    margin-top: 32px;
+    text-align: center;
+}
+
+.footerText {
+    font-size: 12px;
+    color: #c5c5c5;
+}
+
+/* 验证码区域 */
+.captchaRow {
     display: flex;
-    align-items: center;
-    margin: 24px 0;
-    gap: 16px;
+    align-items: flex-start;
+    gap: 12px;
 }
 
-.divider::before,
-.divider::after {
-    content: '';
+.captchaInput {
     flex: 1;
-    height: 1px;
-    background: #eef0f2;
 }
 
-.divider span {
-    font-size: 13px;
-    color: #86868b;
+.captchaBtn {
+    height: 48px;
+    min-width: 120px;
+    border-radius: 10px;
+    font-size: 14px;
+    white-space: nowrap;
 }

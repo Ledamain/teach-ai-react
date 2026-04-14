@@ -134,7 +134,7 @@ export default {
             }
 
             return {
-                id: String(data.id),
+                id: data.id,
                 title: data.exerciseName,
                 description: contentData.description,
                 totalScore: data.totalScore,

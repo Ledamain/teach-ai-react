@@ -3,6 +3,7 @@
 
 .container {
     min-height: 100vh;
+    max-height: 100vh;
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -337,7 +338,7 @@
 
 /* 欢迎界面样式 - OpenAI 风格 */
 :global(.ant-welcome) {
-    padding: 80px 40px !important;
+    padding: 60px 40px !important;
 }
 
 :global(.ant-welcome-title) {

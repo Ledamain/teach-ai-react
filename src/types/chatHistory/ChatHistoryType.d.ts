@@ -16,3 +16,11 @@ interface ChatMessageType {
     createTime: string;
     updateTime: string;
 }
+
+interface HistoryListItem {
+    memoryId: string;
+    messageTitle: string;
+    messagesJson: string;
+    createTime: number;
+    updateTime: number;
+}

@@ -45,7 +45,7 @@ import {
   getStudentDetail
 } from '@/api/workspace/courseDetail';
 import CourseDetailApi from '@/api/workspace/courseDetail'
-import ClassesApi from '@/api/classes/index'
+import ClassesApi from '@/api/classes'
 import type { Student, ClassInfo, StudentDetail } from '@/types/workspace/CourseDetailType';
 import styles from '@/styles/workspace/courseDetail.module.css';
 import {CLassesType} from "@/types/classes/ClassesType";
@@ -289,7 +289,19 @@ const StudentPanel: React.FC<StudentPanelProps> = ({ courseId }) => {
                 </div>
                 <div className={styles.studentCardHeader}>
                   <div className={styles.studentAvatar}>
-                    {student.clientAvator || student.nickname.charAt(0)}
+                    {student.clientAvator ? (
+                        <img
+                            src={student.clientAvator}
+                            alt="头像"
+                            className={styles.avatarImg}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.parentElement.innerText = student.nickname?.charAt(0) || '';
+                            }}
+                        />
+                    ) : (
+                        student.nickname?.charAt(0) || ''
+                    )}
                   </div>
                   <div className={styles.studentInfo}>
                     <div className={styles.studentName}>{student.nickname}</div>

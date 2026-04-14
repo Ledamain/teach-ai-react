@@ -23,9 +23,6 @@ import {
   InitiatePptCreationResp
 } from "@/types/ppt/PptType";
 
-// API 基础路径配置
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
-
 // ==================== 数据分析相关 API ====================
 
 /**
@@ -41,7 +38,7 @@ export const getCourseAnalytics = async (courseId: string): Promise<AnalyticsDat
   // 模拟数据
   return {
     totalQuestions: 1256,
-    participantStudents: 89,
+    participantStudents: 36,
     subjectCategories: 12,
     todayQuestions: 45,
     questionTypeDistribution: [
@@ -145,23 +142,6 @@ export const getStudentDetail = async (
 };
 
 /**
- * 获取班级列表
- * @param courseId 课程ID
- * @returns 班级列表
- */
-export const getClassList = async (courseId: string): Promise<ClassInfo[]> => {
-  // TODO: 替换为实际 API 调用
-  // const response = await fetch(`${API_BASE_URL}/courses/${courseId}/classes`);
-  // return response.json();
-  
-  return [
-    { id: '1', name: '高三(1)班', studentCount: 45 },
-    { id: '2', name: '高三(2)班', studentCount: 42 },
-    { id: '3', name: '高三(3)班', studentCount: 38 },
-  ];
-};
-
-/**
  * 添加学生
  * @param courseId 课程ID
  * @param studentData 学生数据
@@ -204,74 +184,6 @@ export const deleteStudents = async (courseId: string, studentIds: string[]): Pr
 
 
 // ==================== 作业练习相关 API ====================
-
-/**
- * 获取作业列表
- * @param courseId 课程ID
- */
-export const getAssignmentList = async (courseId: string): Promise<Assignment[]> => {
-  // TODO: 替换为实际 API 调用
-  // const response = await fetch(`${API_BASE_URL}/courses/${courseId}/assignments`);
-  // return response.json();
-  
-  // 模拟数据
-  return [
-    {
-      id: '1',
-      title: '高等数学期中测试',
-      description: '涵盖导数、积分基础内容',
-      startDate: '2024-04-01 09:00',
-      dueDate: '2024-04-01 11:00',
-      status: 'closed',
-      submissionCount: 42,
-      totalStudents: 45,
-    },
-    {
-      id: '2',
-      title: '函数与极限练习',
-      description: '第一章课后练习题',
-      startDate: '2024-04-05 14:00',
-      dueDate: '2024-04-07 23:59',
-      status: 'published',
-      submissionCount: 28,
-      totalStudents: 45,
-    },
-    {
-      id: '3',
-      title: '微分方程专项训练',
-      description: undefined,
-      startDate: '2024-04-10 08:00',
-      dueDate: '2024-04-15 23:59',
-      status: 'draft',
-      submissionCount: 0,
-      totalStudents: 45,
-    },
-  ];
-};
-
-/**
- * 创建作业
- * @param courseId 课程ID
- * @param assignmentData 作业数据
- */
-export const createAssignment = async (
-  courseId: string,
-  assignmentData: Omit<Assignment, 'id' | 'submissionCount'>
-): Promise<Assignment> => {
-  // TODO: 替换为实际 API 调用
-  // const response = await fetch(`${API_BASE_URL}/courses/${courseId}/assignments`, {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(assignmentData),
-  // });
-  // return response.json();
-  
-  return {
-    ...assignmentData,
-    id: Date.now().toString(),
-    submissionCount: 0,
-  };
-};
 
 /**
  * 更新作业

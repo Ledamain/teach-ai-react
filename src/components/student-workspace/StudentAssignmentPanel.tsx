@@ -12,7 +12,7 @@ import {
   SendOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import AssignmentApi from '@/api/assignment/index'
+import AssignmentApi from '@/api/assignment'
 import {
   StudentAssignment,
   StudentAssignmentDetail,
@@ -63,7 +63,13 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
     try {
       setLoading(true);
       const result = await AssignmentApi.getStudentAssignmentList(Number(courseId), Number(studentId));
-      setAssignments(result);
+
+      // ========== 在这里加去重 ==========
+      const uniqueResult = Array.from(
+          new Map(result.map(item => [item.id, item])).values()
+      );
+
+      setAssignments(uniqueResult); // 用去重后的数据
     } catch (error) {
       console.error('获取作业列表失败:', error);
       message.error('获取作业列表失败');
@@ -395,7 +401,7 @@ const StudentAssignmentPanel: React.FC<StudentAssignmentPanelProps> = ({
           <span>
             进行中: {assignments.filter((a) => a.status === 1).length}
           </span>
-            <span>已结束: {assignments.filter((a) => a.status === 1).length}</span>
+            <span>已结束: {assignments.filter((a) => a.status === 2).length}</span>
           </div>
         </motion.div>
 

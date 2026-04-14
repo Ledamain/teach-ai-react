@@ -3,7 +3,7 @@ import {
     BindPptArtifactResp,
     ExportPptArtifactResp, GetPptArtifactExportResultResp,
     InitiatePptCreationResp,
-    PageResponseBO,
+    PageResponseBO, pptExportParam,
     TemplateBO
 } from "@/types/ppt/PptType";
 
@@ -35,7 +35,7 @@ export default {
         return request.post<ExportPptArtifactResp>('/ppt/exportPptArtifact', data);
     },
 
-    getPptArtifactExportResult(data: { exportTaskId: string }) {
-        return request.post<GetPptArtifactExportResultResp>('/ppt/getPptArtifactExportResult', data);
+    getPptArtifactExportResult(data: pptExportParam) {
+        return request.post<boolean>('/ppt/getPptArtifactExportResult', data);
     },
 };

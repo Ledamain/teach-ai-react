@@ -1,0 +1,284 @@
+/* 自定义组件区域样式 */
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabNavigation {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tabButtonActive {
+  composes: tabButton;
+  background-color: #1f2937;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tabButtonInactive {
+  composes: tabButton;
+  background: transparent;
+  color: #6b7280;
+}
+
+.tabButtonInactive:hover {
+  color: #1f2937;
+  background-color: #f3f4f6;
+}
+
+.tabIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.tabLabel {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .tabLabel {
+    display: inline;
+  }
+}
+
+.contentArea {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Chat Component Styles */
+.chatContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatMessages {
+  flex: 1;
+  overflow: auto;
+  padding: 1.5rem;
+}
+
+.chatMessagesInner {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.chatPlaceholder {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.875rem;
+  padding: 3rem 0;
+}
+
+.chatPlaceholderIcon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  border-radius: 1rem;
+  background-color: rgba(16, 185, 129, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chatPlaceholderIconSvg {
+  width: 2rem;
+  height: 2rem;
+  color: #10b981;
+}
+
+.chatPlaceholderTitle {
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.chatPlaceholderText {
+  font-size: 0.75rem;
+}
+
+.chatPlaceholderLessonId {
+  font-size: 0.75rem;
+  color: rgba(107, 114, 128, 0.6);
+  margin-top: 0.5rem;
+}
+
+.chatInputArea {
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+}
+
+.chatInputWrapper {
+  max-width: 42rem;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.75rem;
+}
+
+.chatInput {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #1f2937;
+  font-size: 0.875rem;
+}
+
+.chatInput::placeholder {
+  color: #9ca3af;
+}
+
+.chatInput:focus {
+  outline: none;
+  ring: 2px solid rgba(16, 185, 129, 0.5);
+}
+
+.chatInput:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chatSendButton {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  background-color: #1f2937;
+  color: #ffffff;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.chatSendButton:hover:not(:disabled) {
+  background-color: rgba(31, 41, 55, 0.9);
+}
+
+.chatSendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Placeholder Component Styles */
+.placeholderContainer {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.placeholderContent {
+  text-align: center;
+  color: #6b7280;
+  max-width: 28rem;
+}
+
+.placeholderIcon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 1rem;
+  border-radius: 1rem;
+  background-color: rgba(16, 185, 129, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholderIconSvg {
+  width: 2rem;
+  height: 2rem;
+  color: #10b981;
+}
+
+.placeholderTitle {
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.placeholderText {
+  font-size: 0.75rem;
+}
+
+.placeholderLessonId {
+  font-size: 0.75rem;
+  color: rgba(107, 114, 128, 0.6);
+  margin-top: 0.5rem;
+}
+
+/* Custom Placeholder Additional Styles */
+.customPlaceholderText {
+  font-size: 0.75rem;
+}
+
+.lessonInfoCard {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background-color: #f3f4f6;
+  text-align: left;
+}
+
+.lessonInfoLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.lessonInfoTitle {
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.lessonInfoId {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.integrationHint {
+  margin-top: 1.5rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.integrationHintLabel {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.integrationTags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.integrationTag {
+  padding: 0.25rem 0.75rem;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+}

@@ -1060,6 +1060,25 @@
   color: #22c55e;
 }
 
+.studentAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #3a83f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #ffffff;
+}
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 /* 响应式 */
 @media (max-width: 1200px) {
   .statsCards {

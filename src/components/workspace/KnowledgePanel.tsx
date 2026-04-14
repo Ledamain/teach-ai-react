@@ -21,9 +21,9 @@ import {
 } from '@ant-design/icons';
 import {
   deleteKnowledgeFolder,
-} from '@/api/repo/index';
-import KnowLedgeApi from '@/api/repo/index'
-import WorkspaceApi from '@/api/workspace/index'
+} from '@/api/repo';
+import KnowLedgeApi from '@/api/repo'
+import WorkspaceApi from '@/api/workspace'
 import styles from '@/styles/workspace/courseDetail.module.css';
 import {
   KnowledgeFile,
@@ -264,7 +264,7 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
         repoCategoryId: courseId,
         repoGroupId: Number(folderDetail.id),
         repoDesp: repoDesp,
-        fileUrl: fileUrl,
+        repoFile: fileUrl,
       }
       await KnowLedgeApi.uploadKnowledgeFileWithDesc(submitData); // 这里不需要接收 newFile
 
@@ -321,7 +321,7 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
     multiple: false,
     accept: '.doc,.docx,.ppt,.pptx,.txt,.md',
     // 启用自动上传
-    action: `${process.env.NEXT_PUBLIC_API_URL_LOC}/admin-api/infra/file/upload`,
+    action: `${process.env.NEXT_PUBLIC_FETCH_API_URL}/admin-api/infra/file/upload`,
     // 上传成功后拿到文件地址
     onChange(info) {
       if (info.file.status === 'done') {

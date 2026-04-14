@@ -57,7 +57,7 @@ export interface KnowLedgeFolderParams {
 // 知识库文件夹上传参数
 export interface KnowledgeFolderUploadParams {
     repoTitle: string;
-    fileUrl: string;    // 文件地址
+    repoFile: string;    // 文件地址
     repoDesp: string;   // 描述
     repoCategoryId: number;   // 学科ID
     repoGroupId: number; // 文件夹ID

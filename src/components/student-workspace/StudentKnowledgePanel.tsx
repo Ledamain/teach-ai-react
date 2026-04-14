@@ -12,7 +12,7 @@ import {
   DownloadOutlined,
   CloseOutlined, DeleteOutlined,
 } from '@ant-design/icons';
-import KnowLedgeApi from '@/api/repo/index'
+import KnowLedgeApi from '@/api/repo'
 import {
   KnowledgeFile,
   KnowledgeFolder,

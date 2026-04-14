@@ -4,7 +4,7 @@ import type { AppProps } from 'next/app';
 import '@/styles/globals.css'
 import theme from '@/theme/ themeConfig';
 import {XProvider} from "@ant-design/x";
-import AuthGuard from "@/pages/components/AuthGuard";
+import AuthGuard from "@/components/AuthGuard";
 import { AppThemeProvider } from '@/theme/ThemeContext';
 import Head from 'next/head';
 import Script from "next/script";

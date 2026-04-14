@@ -33,8 +33,8 @@ import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import styles from '@/styles/workspace/courseDetail.module.css';
 import {AssignmentDetail,Assignment,  Question, StudentSubmission, SubmissionListItem, PublishData} from "@/types/assignment/AssignmentType";
-import AssignmentApi from '@/api/assignment/index'
-import ClassesApi from '@/api/classes/index'
+import AssignmentApi from '@/api/assignment'
+import ClassesApi from '@/api/classes'
 import {UserInfo} from "@/types/login/LoginType";
 import {CLassesType} from "@/types/classes/ClassesType";
 

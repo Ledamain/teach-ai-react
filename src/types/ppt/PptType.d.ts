@@ -15,6 +15,11 @@ export interface InitiatePptCreationResp {
     taskId: string;
 }
 
+export interface pptExportParam {
+    exportTaskId: string;
+    clientUserId: number;
+}
+
 export interface BindPptArtifactResp {}
 export interface ExportPptArtifactResp { exportTaskId: string; }
 export interface GetPptArtifactExportResultResp { exportFileLink: string[]; }

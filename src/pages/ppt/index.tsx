@@ -10,9 +10,7 @@ import {
     Modal, UploadProps, UploadFile, Flex, Upload, theme,
 } from 'antd';
 import {
-    ThunderboltOutlined,
     FileTextOutlined,
-    LeftOutlined,
     ReloadOutlined,
     HolderOutlined,
     ArrowRightOutlined, CloudUploadOutlined, UploadOutlined, PaperClipOutlined,
@@ -24,6 +22,8 @@ import styles from '@/styles/ppt/index.module.css';
 
 import pptApi from '@/api/ppt';
 import {PptQuery, streamPptOutline} from '@/api/ppt/streamPptOutline';
+import {UserInfo} from "@/types/login/LoginType";
+import {pptExportParam} from "@/types/ppt/PptType";
 
 const {Text} = Typography;
 
@@ -131,6 +131,17 @@ export default function PptGeneratePage() {
     const pptMemoryIdRef = useRef<string>('');
 
 
+    const getUserId = (): number => {
+        if (typeof window === 'undefined') return null;
+        const userInfoStr = window.localStorage.getItem('userInfo');
+        if (!userInfoStr) return null;
+        try {
+            const userInfo: UserInfo = JSON.parse(userInfoStr);
+            return Number(userInfo.id);
+        } catch {
+            return null;
+        }
+    };
 
     useEffect(() => {
         const G = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -162,7 +173,7 @@ export default function PptGeneratePage() {
 
     const uploadProps: UploadProps = useMemo(() => ({
         name: 'file',
-        action: `${process.env.NEXT_PUBLIC_API_URL_LOC}/admin-api/infra/file/upload`,
+        action: `${process.env.NEXT_PUBLIC_FETCH_API_URL}/admin-api/infra/file/upload`,
         headers: {
             fileflag: `authorization-PPT_FILE_UPLOAD-${encodeURIComponent(pptMemoryIdRef.current)}`,
         },
@@ -406,11 +417,14 @@ export default function PptGeneratePage() {
             pollTimerRef.current = setInterval(async () => {
                 count++;
                 try {
-                    const result: any = await pptApi.getPptArtifactExportResult({exportTaskId});
-                    const links = result?.exportFileLink;
-                    if (links?.length) {
+                    const param: pptExportParam = {
+                        exportTaskId: exportTaskId,
+                        clientUserId: getUserId()
+                    }
+                    const result: any = await pptApi.getPptArtifactExportResult(param);
+                    if (result) {
                         clearInterval(pollTimerRef.current!);
-                        setExportMsg({text: '导出完成', link: links[0]});
+                        setExportMsg({text: '导出完成'});
                         setExportLoading(false);
                     } else if (count >= 30) {
                         clearInterval(pollTimerRef.current!);

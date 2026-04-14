@@ -6,7 +6,7 @@ import { ArrowLeftOutlined, BookOutlined, FolderOutlined } from '@ant-design/ico
 import { message, Spin } from 'antd';
 import Image, {type StaticImageData} from 'next/image';
 import { Course } from '@/types/workspace/WorkspaceType';
-import StudentWorkspaceApi from '@/api/studentWorkspace/index'
+import StudentWorkspaceApi from '@/api/studentWorkspace'
 import StudentCourseDetail from './StudentCourseDetail';
 import styles from '@/styles/studentWorkspace/index.module.css';
 

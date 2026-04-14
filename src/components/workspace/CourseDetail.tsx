@@ -7,7 +7,8 @@ import {
   BarChartOutlined,
   TeamOutlined,
   FolderOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  RobotOutlined
 } from '@ant-design/icons';
 import type { Course } from '@/types/workspace/WorkspaceType';
 import AnalyticsPanel from './AnalyticsPanel';
@@ -15,13 +16,15 @@ import StudentPanel from './StudentPanel';
 import KnowledgePanel from './KnowledgePanel';
 import AssignmentPanel from './AssignmentPanel';
 import styles from '@/styles/workspace/courseDetail.module.css';
+import HomePage from "@/pages/aicourse";
+import {router} from "next/client";
 
 interface CourseDetailProps {
   course: Course;
   onBack: () => void;
 }
 
-type TabKey = 'analytics' | 'students' | 'knowledge' | 'assignment';
+type TabKey = 'analytics' | 'students' | 'knowledge' | 'assignment' | 'aiCourse';
 
 interface TabItem {
   key: TabKey;
@@ -34,10 +37,23 @@ const tabs: TabItem[] = [
   { key: 'students', label: '学生管理', icon: <TeamOutlined /> },
   { key: 'knowledge', label: '知识库管理', icon: <FolderOutlined /> },
   { key: 'assignment', label: '作业练习', icon: <FileTextOutlined /> },
+  { key: 'aiCourse', label: 'AI通识课', icon: <RobotOutlined /> },
 ];
 
 const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) => {
   const [activeTab, setActiveTab] = useState<TabKey>('analytics');
+  const [showAICourse, setShowAICourse] = useState(false);
+
+
+  // 处理Tab点击
+  const handleTabClick = (key: TabKey) => {
+    if (key === 'aiCourse') {
+      // setShowAICourse(true);
+      router.push('/aicourse')
+    } else {
+      setActiveTab(key);
+    }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -104,7 +120,7 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) => {
             <div
               key={tab.key}
               className={`${styles.tabItem} ${activeTab === tab.key ? styles.tabItemActive : ''}`}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => handleTabClick(tab.key)}
             >
               {tab.icon}
               <span>{tab.label}</span>
@@ -127,6 +143,15 @@ const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) => {
           </motion.div>
         </AnimatePresence>
       </div>
+      {/* AI通识课全屏模态框 */}
+      {/*{showAICourse && (*/}
+      {/*    // <AICoursePanel*/}
+      {/*    //     courseId={course.id}*/}
+      {/*    //     courseName={course.repoCategoryName}*/}
+      {/*    //     onClose={() => setShowAICourse(false)}*/}
+      {/*    // />*/}
+      {/*    <HomePage/>*/}
+      {/*)}*/}
     </motion.div>
   );
 };

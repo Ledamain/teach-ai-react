@@ -12,7 +12,7 @@ import { isBrowser } from './env';
 // 创建axios实例
 const service: AxiosInstance = axios.create({
     baseURL: '/client-api',
-    timeout: 30000,
+    timeout: 50000,
     headers: {
         'Content-Type': 'application/json;charset=utf-8'
     } as AxiosRequestHeaders

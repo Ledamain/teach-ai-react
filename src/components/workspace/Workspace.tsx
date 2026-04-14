@@ -16,10 +16,10 @@ import {
   getCourseGroupList,
   updateCourse,
   deleteCourse,
-} from '@/api/workspace/index';
-import WorkspaceApi from '@/api/workspace/index'
-import RepoCategoryApi from '@/api/repoCategory/index'
-import CourseGroupApi from '@/api/coursegroup/index'
+} from '@/api/workspace';
+import WorkspaceApi from '@/api/workspace'
+import RepoCategoryApi from '@/api/repoCategory'
+import CourseGroupApi from '@/api/coursegroup'
 import CourseCard from './CourseCard';
 import CourseModal from './CourseModal';
 import CourseDetail from './CourseDetail';
