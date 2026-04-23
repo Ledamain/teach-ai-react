@@ -6,13 +6,15 @@ import {
   ArrowLeftOutlined,
   BarChartOutlined,
   FolderOutlined,
-  FileTextOutlined,
+  FileTextOutlined, RobotOutlined,
 } from '@ant-design/icons';
 import type { Course } from '@/types/workspace/WorkspaceType';
 import StudentAnalyticsPanel from './StudentAnalyticsPanel';
 import StudentKnowledgePanel from './StudentKnowledgePanel';
 import StudentAssignmentPanel from './StudentAssignmentPanel';
 import styles from '@/styles/studentWorkspace/index.module.css';
+import AssignmentPanel from "../workspace/AssignmentPanel";
+import {router} from "next/client";
 
 interface StudentCourseDetailProps {
   course: Course;
@@ -20,7 +22,7 @@ interface StudentCourseDetailProps {
   onBack: () => void;
 }
 
-type TabKey = 'analytics' | 'knowledge' | 'assignment';
+type TabKey = 'analytics' | 'knowledge' | 'assignment' | 'aiCourse';
 
 interface TabItem {
   key: TabKey;
@@ -33,6 +35,7 @@ const tabs: TabItem[] = [
   { key: 'analytics', label: '数据分析', icon: <BarChartOutlined /> },
   { key: 'knowledge', label: '知识库管理', icon: <FolderOutlined /> },
   { key: 'assignment', label: '作业练习', icon: <FileTextOutlined /> },
+  { key: 'aiCourse', label: 'AI通识课', icon: <RobotOutlined /> },
 ];
 
 const StudentCourseDetail: React.FC<StudentCourseDetailProps> = ({
@@ -41,6 +44,16 @@ const StudentCourseDetail: React.FC<StudentCourseDetailProps> = ({
   onBack,
 }) => {
   const [activeTab, setActiveTab] = useState<TabKey>('analytics');
+
+  // 处理Tab点击
+  const handleTabClick = (key: TabKey) => {
+    if (key === 'aiCourse') {
+      // setShowAICourse(true);
+      router.push('/aicourse')
+    } else {
+      setActiveTab(key);
+    }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -103,7 +116,7 @@ const StudentCourseDetail: React.FC<StudentCourseDetailProps> = ({
               className={`${styles.tabItem} ${
                 activeTab === tab.key ? styles.tabItemActive : ''
               }`}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => handleTabClick(tab.key)}
             >
               {tab.icon}
               <span>{tab.label}</span>

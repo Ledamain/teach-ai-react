@@ -299,7 +299,7 @@ const Workspace: React.FC<WorkspaceProps> = ({ onBack, logoImage = '/placeholder
             height={36}
             className={styles.headerLogo}
           />
-          <span className={styles.headerTitleText}>AI智学教学辅助平台</span>
+          <span className={styles.headerTitleText}>智汇伴学教学辅助平台</span>
         </div>
 
         {/* 右侧按钮 */}

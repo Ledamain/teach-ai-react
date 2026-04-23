@@ -1,8 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { Boxes, Code, MessageSquare, Play } from 'lucide-react'
+import { Boxes,MessageSquare, Presentation, ImagePlus, Video } from 'lucide-react'
 import styles from '@/styles/aicourse/customComponentArea/index.module.css'
+import Chat from "@/pages/chat";
+import PptGeneratePage from "@/pages/ppt";
+import ImageGeneratePage from "@/pages/image";
+import VideoGeneratePage from "@/pages/video";
 
 interface CustomComponentAreaProps {
   lessonId: string
@@ -10,7 +14,7 @@ interface CustomComponentAreaProps {
 }
 
 // 组件类型定义 - 你可以根据需要扩展
-type ComponentType = 'chat' | 'code' | 'preview' | 'custom'
+type ComponentType = 'chat' | 'ppt' | 'image' | 'video'
 
 interface TabConfig {
   id: ComponentType
@@ -20,9 +24,9 @@ interface TabConfig {
 
 const tabs: TabConfig[] = [
   { id: 'chat', label: '智能问答', icon: <MessageSquare className={styles.tabIcon} /> },
-  { id: 'code', label: '代码编辑', icon: <Code className={styles.tabIcon} /> },
-  { id: 'preview', label: '预览', icon: <Play className={styles.tabIcon} /> },
-  { id: 'custom', label: '自定义', icon: <Boxes className={styles.tabIcon} /> },
+  { id: 'ppt', label: 'PPT生成', icon:  <Presentation className={styles.tabIcon} /> },
+  { id: 'image', label: '图像生成', icon: <ImagePlus className={styles.tabIcon} /> },
+  { id: 'video', label: '视频生成', icon: <Video className={styles.tabIcon} /> },
 ]
 
 export function CustomComponentArea({ lessonId, lessonTitle }: CustomComponentAreaProps) {
@@ -32,13 +36,13 @@ export function CustomComponentArea({ lessonId, lessonTitle }: CustomComponentAr
   const renderContent = () => {
     switch (activeTab) {
       case 'chat':
-        return <ChatComponent lessonId={lessonId} />
-      case 'code':
-        return <CodeEditorComponent lessonId={lessonId} />
-      case 'preview':
-        return <PreviewComponent lessonId={lessonId} />
-      case 'custom':
-        return <CustomPlaceholder lessonId={lessonId} lessonTitle={lessonTitle} />
+        return <Chat lessonId={lessonId} />
+      case 'ppt':
+        return <PptGeneratePage lessonId={lessonId} />
+      case 'image':
+        return <ImageGeneratePage lessonId={lessonId} />
+      case 'video':
+        return <VideoGeneratePage lessonId={lessonId} lessonTitle={lessonTitle} />
       default:
         return <CustomPlaceholder lessonId={lessonId} lessonTitle={lessonTitle} />
     }

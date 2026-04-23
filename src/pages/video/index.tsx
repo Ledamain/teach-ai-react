@@ -14,11 +14,12 @@ import {
     Type,
     Sparkles,
     CheckCircle2,
+    GiftIcon,
 } from 'lucide-react';
 import styles from '@/styles/video/index.module.css';
 import VideoApi from '@/api/video/index'
-import {VideoChatParam} from "@/types/video/VideoType";
-import {UserInfo} from "@/types/login/LoginType";
+import { VideoChatParam } from "@/types/video/VideoType";
+import { UserInfo } from "@/types/login/LoginType";
 import {getUserId} from "@/utils/userUtil";
 
 interface VideoResponse {
@@ -35,7 +36,7 @@ interface VideoResponse {
     usage: {
         video_count: number;
         duration: number;
-        size: string; // "1280*720"
+        size: string;
         input_video_duration: number;
         output_video_duration: number;
         SR: string;
@@ -53,7 +54,7 @@ interface GeneratedVideo {
 }
 
 async function pollVideoResult(taskId: string, timeout = 480000): Promise<string> {
-    const interval = 5000; // 视频生成慢，5秒轮询一次
+    const interval = 5000;
     const deadline = Date.now() + timeout;
 
     while (Date.now() < deadline) {
@@ -68,9 +69,8 @@ async function pollVideoResult(taskId: string, timeout = 480000): Promise<string
     throw new Error('生成超时，请重试');
 }
 
-
 type AspectRatio = '1280*720' | '720*1280' | '1024*1024';
-type Duration = '5' | '10' | '15';
+type Duration = '5' | '10' | '15' | '30' | '60';
 
 export default function VideoGeneratePage() {
     const [prompt, setPrompt] = useState('');
@@ -80,23 +80,31 @@ export default function VideoGeneratePage() {
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [generatedVideo, setGeneratedVideo] = useState<GeneratedVideo | null>(null);
 
-    // 解析 API 返回的字符串
+    // GIF 导出状态
+    const [isExportingGif, setIsExportingGif] = useState(false);
+
+    const getUserId = (): number => {
+        if (typeof window === 'undefined') return 0;
+        const userInfoStr = window.localStorage.getItem('userInfo');
+        if (!userInfoStr) return 0;
+        try {
+            const userInfo: UserInfo = JSON.parse(userInfoStr);
+            return Number(userInfo.id) || 0;
+        } catch {
+            return 0;
+        }
+    };
+
     const parseVideoResponse = (responseText: string): GeneratedVideo | null => {
         try {
             const data: VideoResponse = JSON.parse(responseText);
-
-            // 检查是否生成成功
             if (data.status_code !== 200 || data.output?.task_status !== 'SUCCEEDED') {
-                throw new Error(data.output?.message || data.message || '视频生成失败');            }
-
-            // 拿到视频地址
+                throw new Error(data.output?.message || data.message || '视频生成失败');
+            }
             const videoUrl = data.output?.video_url;
             if (!videoUrl) return null;
-
-            // 解析尺寸 1280*720 → 宽、高
             const size = data.usage?.size || '1280*720';
             const [width, height] = size.split('*').map(Number);
-
             return {
                 url: videoUrl,
                 width: width || 1280,
@@ -109,22 +117,8 @@ export default function VideoGeneratePage() {
         }
     };
 
-    const getUserId = (): number => {
-        if (typeof window === 'undefined') return null;
-        const userInfoStr = window.localStorage.getItem('userInfo');
-        if (!userInfoStr) return null;
-        try {
-            const userInfo: UserInfo = JSON.parse(userInfoStr);
-            return Number(userInfo.id);
-        } catch {
-            return null;
-        }
-    };
-
-    // 发送生成请求
     const handleGenerate = useCallback(async () => {
         if (!prompt.trim()) return;
-
         setStatus('loading');
         setErrorMessage('');
         setGeneratedVideo(null);
@@ -136,15 +130,10 @@ export default function VideoGeneratePage() {
                 aspectRatio,
                 duration,
             };
-
-            // 1. 提交任务，拿到 taskId
             const taskId = await VideoApi.createVideo(submit);
             if (!taskId) throw new Error('任务提交失败');
-
-            // 2. 轮询直到完成，最多等 3 分钟
             const result = await pollVideoResult(taskId);
             const parsedVideo = parseVideoResponse(result);
-
             if (parsedVideo) {
                 setGeneratedVideo(parsedVideo);
                 setStatus('done');
@@ -157,25 +146,105 @@ export default function VideoGeneratePage() {
         }
     }, [prompt, aspectRatio, duration]);
 
-    // 下载视频
+    // 下载原视频
     const handleDownload = async () => {
         if (!generatedVideo) return;
-
         try {
             const response = await fetch(generatedVideo.url);
             const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `ai-video-${Date.now()}.mp4`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ai-video-${Date.now()}.mp4`;
+            a.click();
+            URL.revokeObjectURL(url);
         } catch (error) {
             console.error('下载失败:', error);
             window.open(generatedVideo.url, '_blank');
         }
+    };
+
+    // ======================
+    // 导出 GIF（时长跟随选择）
+    // ======================
+    const handleExportGif = async () => {
+        if (!generatedVideo || isExportingGif) return;
+        setIsExportingGif(true);
+
+        try {
+            if (!(window as any).GIF) {
+                await loadScript('https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.min.js');
+            }
+
+            const { width, height, url } = generatedVideo;
+            const targetDuration = parseInt(duration);
+
+            const video = document.createElement('video');
+            video.muted = true;
+            video.crossOrigin = 'anonymous';
+            video.src = url;
+
+            await new Promise<void>(resolve => {
+                video.onloadedmetadata = () => resolve();
+            });
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d')!;
+
+            const fps = 8;
+            const totalFrames = fps * targetDuration;
+
+            const gif = new (window as any).GIF({
+                workers: 2,
+                quality: 10,
+                width,
+                height,
+                repeat: 0,
+                workerScript: '/gif.worker.js',
+            });
+
+            for (let i = 0; i < totalFrames; i++) {
+                const targetTime = i / fps;
+
+                await new Promise<void>(resolve => {
+                    video.onseeked = () => resolve();
+                    video.currentTime = targetTime;
+                });
+
+                ctx.drawImage(video, 0, 0, width, height);
+                gif.addFrame(canvas, { delay: 1000 / fps, copy: true }); // ✅ copy: true 很重要
+            }
+
+            gif.on('finished', (blob: Blob) => {
+                const gifUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = gifUrl;
+                a.download = `ai-video-${Date.now()}.gif`;
+                a.click();
+                URL.revokeObjectURL(gifUrl);
+                setIsExportingGif(false);
+            });
+
+            gif.render();
+
+        } catch (err) {
+            console.error('GIF 导出失败', err);
+            alert('GIF 导出失败，请重试');
+            setIsExportingGif(false);
+        }
+    };
+
+    // 动态加载脚本
+    const loadScript = (src: string): Promise<void> => {
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => resolve();
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
     };
 
     const containerVariants = {
@@ -196,7 +265,6 @@ export default function VideoGeneratePage() {
                 initial="initial"
                 animate="animate"
             >
-                {/* ========== 左侧面板 ========== */}
                 <div className={styles.leftPanel}>
                     <div className={styles.leftHeader}>
                         <div className={styles.logoSection}>
@@ -212,32 +280,30 @@ export default function VideoGeneratePage() {
 
                     <div className={styles.leftContent}>
                         <div className={styles.formSection}>
-                            {/* 描述输入 */}
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>
                                     <Type size={16} />
                                     视频描述
                                 </label>
                                 <div className={styles.textareaWrapper}>
-                  <textarea
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="描述你想生成的视频内容，例如：制作面向学生的深度学习课程架构讲解视频，简洁易懂，拆解课程基础、核心理论、实践应用模块，帮助学生理清课程脉络"
-                      maxLength={500}
-                      disabled={status === 'loading'}
-                  />
+                                    <textarea
+                                        value={prompt}
+                                        onChange={(e) => setPrompt(e.target.value)}
+                                        placeholder="描述你想生成的视频内容，例如：制作面向学生的深度学习课程架构讲解视频，简洁易懂，拆解课程基础、核心理论、实践应用模块，帮助学生理清课程脉络"
+                                        maxLength={500}
+                                        disabled={status === 'loading'}
+                                    />
                                     <span className={styles.charCount}>{prompt.length}/500</span>
                                 </div>
                             </div>
 
-                            {/* 画面比例 */}
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>
                                     <Maximize2 size={16} />
                                     画面比例
                                 </label>
                                 <div className={styles.optionGroup}>
-                                    {(['1280*720', '720*1280', '1024*1024'] as string[]).map((ratio) => (
+                                    {(['1280*720', '720*1280', '1024*1024'] as AspectRatio[]).map((ratio) => (
                                         <button
                                             key={ratio}
                                             className={`${styles.optionButton} ${aspectRatio === ratio ? styles.optionButtonActive : ''}`}
@@ -252,29 +318,25 @@ export default function VideoGeneratePage() {
                                 </div>
                             </div>
 
-                            {/* 视频时长 */}
                             <div className={styles.formGroup}>
                                 <label className={styles.formLabel}>
                                     <Clock size={16} />
                                     视频时长
                                 </label>
                                 <div className={styles.optionGroup}>
-                                    {(['5', '10', '15'] as Duration[]).map((d) => (
+                                    {(['5', '10', '15', '30', '60'] as Duration[]).map((d) => (
                                         <button
                                             key={d}
                                             className={`${styles.optionButton} ${duration === d ? styles.optionButtonActive : ''}`}
                                             onClick={() => setDuration(d)}
                                             disabled={status === 'loading'}
                                         >
-                                            {d === '5' && '5 秒'}
-                                            {d === '10' && '10 秒'}
-                                            {d === '15' && '15 秒'}
+                                            {d} 秒
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* 生成按钮 */}
                             <button
                                 className={styles.generateButton}
                                 onClick={handleGenerate}
@@ -296,10 +358,8 @@ export default function VideoGeneratePage() {
                     </div>
                 </div>
 
-                {/* ========== 右侧预览区域 ========== */}
                 <div className={styles.rightPanel}>
                     <AnimatePresence mode="wait">
-                        {/* 空状态 */}
                         {status === 'idle' && (
                             <motion.div
                                 key="empty"
@@ -319,7 +379,6 @@ export default function VideoGeneratePage() {
                             </motion.div>
                         )}
 
-                        {/* 加载状态 */}
                         {status === 'loading' && (
                             <motion.div
                                 key="loading"
@@ -335,7 +394,6 @@ export default function VideoGeneratePage() {
                             </motion.div>
                         )}
 
-                        {/* 错误状态 */}
                         {status === 'error' && (
                             <motion.div
                                 key="error"
@@ -354,7 +412,6 @@ export default function VideoGeneratePage() {
                             </motion.div>
                         )}
 
-                        {/* 视频预览 */}
                         {status === 'done' && generatedVideo && (
                             <motion.div
                                 key="preview"
@@ -366,15 +423,14 @@ export default function VideoGeneratePage() {
                             >
                                 <div className={styles.videoCard}>
                                     <div className={styles.videoCardHeader}>
-                    <span className={styles.videoCardTitle}>
-                      <Video size={20} />
-                      生成结果
-                    </span>
+                                        <span className={styles.videoCardTitle}>
+                                            <Video size={20} />
+                                            生成结果
+                                        </span>
                                         <span className={styles.videoCardStatus}>
-                      <span className={styles.statusDot} />
-                      <CheckCircle2 size={16} />
-                      生成完成
-                    </span>
+                                            <CheckCircle2 size={16} />
+                                            生成完成
+                                        </span>
                                     </div>
 
                                     <div className={styles.videoWrapper}>
@@ -411,6 +467,21 @@ export default function VideoGeneratePage() {
                                                 <Download size={18} />
                                                 下载视频
                                             </button>
+
+                                            {/* 导出 GIF 按钮 */}
+                                            <button
+                                                className={styles.downloadButton}
+                                                onClick={handleExportGif}
+                                                disabled={isExportingGif}
+                                            >
+                                                {isExportingGif ? (
+                                                    <RefreshCw size={18} className="animate-spin" />
+                                                ) : (
+                                                    <GiftIcon size={18} />
+                                                )}
+                                                {isExportingGif ? '导出中...' : '导出 GIF'}
+                                            </button>
+
                                             <button className={styles.regenerateButton} onClick={handleGenerate}>
                                                 <RefreshCw size={18} />
                                                 重新生成

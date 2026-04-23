@@ -178,7 +178,7 @@ const StudentWorkspace: React.FC<StudentWorkspaceProps> = ({
             height={36}
             className={styles.headerLogo}
           />
-          <span className={styles.headerTitleText}>AI智学学习平台</span>
+          <span className={styles.headerTitleText}>智汇伴学学习平台</span>
         </div>
 
         {/* 右侧留空（学生没有创建课程按钮） */}

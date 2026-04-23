@@ -116,7 +116,7 @@ export default function Register() {
                         >
                             <motion.div className={styles.header} variants={itemVariants}>
                                 <Title level={2} className={styles.title}>
-                                    加入 AI智学教学辅助平台
+                                    加入 智汇伴学教学辅助平台
                                 </Title>
                                 <Text className={styles.subtitle}>
                                     填写以下信息，开启您的 AI 学习之旅
@@ -221,7 +221,7 @@ export default function Register() {
                 </AnimatePresence>
 
                 <motion.div className={styles.footer} variants={itemVariants}>
-                    <Text className={styles.footerText}>© 2024 AI智学智能辅助平台. All rights reserved.</Text>
+                    <Text className={styles.footerText}> 2026 智汇伴学智能辅助平台.</Text>
                 </motion.div>
             </motion.div>
         </div>

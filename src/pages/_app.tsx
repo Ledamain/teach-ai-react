@@ -12,8 +12,8 @@ import Script from "next/script";
 const App = ({ Component, pageProps }: AppProps) => (
     <AppThemeProvider>
         <Head>
-            <title>AI智学</title>
-            <meta name="application-name" content="AI智学" />
+            <title>智汇伴学</title>
+            <meta name="application-name" content="智汇伴学" />
         </Head>
         <Script
             src="https://quanmiao-public.oss-cn-beijing.aliyuncs.com/quanmiao-sdk/v1.0.0/index.js"

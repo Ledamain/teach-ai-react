@@ -57,6 +57,18 @@ const getFileIcon = (type: string | undefined | null) => {
       return <FilePptOutlined style={{ color: '#d24726', fontSize: 20 }} />;
     case 'md':
       return <FileMarkdownOutlined style={{ color: '#1a1a1a', fontSize: 20 }} />;
+    case 'pdf':
+      return <FileTextOutlined style={{ color: '#e53935', fontSize: 20 }} />; // PDF 红色图标
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'bmp':
+      return <FileTextOutlined style={{ color: '#1890ff', fontSize: 20 }} />; // 图片蓝色图标
+    case 'mp4':
+    case 'mov':
+    case 'avi':
+      return <FileTextOutlined style={{ color: '#52c41a', fontSize: 20 }} />; // 视频绿色图标
     case 'txt':
     default:
       return <FileTextOutlined style={{ color: '#86868b', fontSize: 20 }} />;
@@ -319,7 +331,7 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
   const uploadProps: UploadProps = {
     name: 'file',
     multiple: false,
-    accept: '.doc,.docx,.ppt,.pptx,.txt,.md',
+    accept: '.doc,.docx,.ppt,.pptx,.txt,.md,.pdf,.jpg,.jpeg,.png,.gif,.bmp,.mp4,.mov,.avi',
     // 启用自动上传
     action: `${process.env.NEXT_PUBLIC_FETCH_API_URL}/admin-api/infra/file/upload`,
     // 上传成功后拿到文件地址
@@ -734,7 +746,7 @@ const KnowledgePanel: React.FC<KnowledgePanelProps> = ({ courseId }) => {
               </p>
               <p className="ant-upload-text">点击或拖拽文件到此区域上传</p>
               <p className="ant-upload-hint">
-                支持 docx、doc、ppt、pptx、txt、md 格式文件
+                支持 docx、doc、ppt、pptx、txt、md、pdf、图片、视频 格式文件
               </p>
             </Dragger>
 

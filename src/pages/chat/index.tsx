@@ -47,7 +47,8 @@ import React, {useState, useRef, useEffect, useCallback, useMemo} from 'react';
 import {motion, AnimatePresence} from 'framer-motion';
 import styles from '@/styles/chat/index.module.css';
 import Image from 'next/image';
-import logoImage from '@/assets/images/logo.jpg';
+// import logoImage from '@/assets/images/logo.jpg';
+import logoImage from '@/assets/images/logozhbx.jpg';
 import {streamChat} from "@/api/chat";
 import {router} from "next/client";
 import {ChatStreamParams} from "@/types/chat/ChatType";
@@ -725,11 +726,24 @@ const Chat: React.FC = () => {
             };
             await streamChat(streamParams, handleChatChunk, controller.signal);
 
+            // setMessagesMap((prev) => {
+            //     const msgs = [...(prev[currentActiveKey] || [])];
+            //     const last = msgs[msgs.length - 1];
+            //     if (last?.id === aiMessageIdRef.current) {
+            //         msgs[msgs.length - 1] = {...last, thinking: false, isComplete: true};
+            //     }
+            //     return {...prev, [currentActiveKey]: msgs};
+            // });
             setMessagesMap((prev) => {
                 const msgs = [...(prev[currentActiveKey] || [])];
                 const last = msgs[msgs.length - 1];
                 if (last?.id === aiMessageIdRef.current) {
-                    msgs[msgs.length - 1] = {...last, thinking: false, isComplete: true};
+                    msgs[msgs.length - 1] = {
+                        ...last,
+                        content: fullResponseRef.current,  // ← 关键：强制写入最终完整内容
+                        thinking: false,
+                        isComplete: true,
+                    };
                 }
                 return {...prev, [currentActiveKey]: msgs};
             });
@@ -1071,7 +1085,7 @@ const Chat: React.FC = () => {
                                                             onChange={setInputValue}
                                                             onSubmit={() => handleSend(inputValue)}
                                                             onCancel={handleStop}
-                                                            placeholder="Message AI智学教学辅助平台..."
+                                                            placeholder="Message 智汇伴学教学辅助平台..."
                                                             autoSize={{minRows: 1, maxRows: 6}}
                                                             allowSpeech={{ recording, onRecordingChange: handleRecordingChange }}
                                                             // 修复：移除可能导致 components 报错的复杂逻辑，简化 footer
@@ -1183,7 +1197,7 @@ const Chat: React.FC = () => {
                                                         exit={{ width: 0, opacity: 0, transition: { duration: 0.25 } }}
                                                         style={{ overflow: 'hidden', height: '100%', flexShrink: 0 }}
                                                     >
-                                                        <DocPreviewPanel content={docContent} title="教学文档" onClose={() => setShowDocPanel(false)} />
+                                                        <DocPreviewPanel content={docContent} title="文档预览" onClose={() => setShowDocPanel(false)} />
                                                     </motion.div>
                                                 )}
                                             </AnimatePresence>

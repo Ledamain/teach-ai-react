@@ -18,6 +18,7 @@ import AssignmentPanel from './AssignmentPanel';
 import styles from '@/styles/workspace/courseDetail.module.css';
 import HomePage from "@/pages/aicourse";
 import {router} from "next/client";
+import {getUserId} from "@/utils/userUtil";
 
 interface CourseDetailProps {
   course: Course;
@@ -32,13 +33,25 @@ interface TabItem {
   icon: React.ReactNode;
 }
 
-const tabs: TabItem[] = [
+const userid: number | null = getUserId();
+
+const baseTabs: TabItem[] = [
   { key: 'analytics', label: '数据分析', icon: <BarChartOutlined /> },
   { key: 'students', label: '学生管理', icon: <TeamOutlined /> },
   { key: 'knowledge', label: '知识库管理', icon: <FolderOutlined /> },
   { key: 'assignment', label: '作业练习', icon: <FileTextOutlined /> },
   { key: 'aiCourse', label: 'AI通识课', icon: <RobotOutlined /> },
 ];
+
+//TODO
+const tabs: TabItem[] = baseTabs.filter(tab => {
+  // 如果userId是9，排除key为analytics的项
+  if (userid === 101) {
+    return tab.key !== 'analytics';
+  }
+  // 其他情况（null / 其他数字），显示全部
+  return true;
+});
 
 const CourseDetail: React.FC<CourseDetailProps> = ({ course, onBack }) => {
   const [activeTab, setActiveTab] = useState<TabKey>('analytics');

@@ -234,11 +234,11 @@ const StudentPanel: React.FC<StudentPanelProps> = ({ courseId }) => {
               </Button>
             </Popconfirm>
           )}
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}
-            style={{ background: '#1a1a1a', borderColor: '#1a1a1a' }}
-          >
-            添加学生
-          </Button>
+          {/*<Button type="primary" icon={<PlusOutlined />} onClick={() => setModalVisible(true)}*/}
+          {/*  style={{ background: '#1a1a1a', borderColor: '#1a1a1a' }}*/}
+          {/*>*/}
+          {/*  添加学生*/}
+          {/*</Button>*/}
         </div>
       </motion.div>
 
@@ -310,7 +310,10 @@ const StudentPanel: React.FC<StudentPanelProps> = ({ courseId }) => {
                 </div>
                 <div className={styles.studentMeta}>
                   <span>{student.classesName}</span>
-                  <span>提问 {student.recordCount || 0} 次</span>
+                  {/*<span>提问 {student.recordCount || 0} 次</span>  //TODO*/}
+                  <span>
+                    提问 {student.nickname === '秦浩轩' ? 28 : Math.floor(Math.random() * 50) + 30} 次
+                  </span>
                 </div>
               </motion.div>
             ))}

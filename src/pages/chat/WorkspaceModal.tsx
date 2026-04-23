@@ -127,7 +127,7 @@ const WorkspaceModal: React.FC<WorkspaceModalProps> = ({
 
                 <div className={styles.headerTitle}>
                     <Image src={logoImage} alt="logo" width={36} height={36} className={styles.headerLogo} />
-                    <span>AI智学教学辅助平台</span>
+                    <span>智汇伴学教学辅助平台</span>
                 </div>
             </div>
 

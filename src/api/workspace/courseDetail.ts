@@ -38,7 +38,7 @@ export const getCourseAnalytics = async (courseId: string): Promise<AnalyticsDat
   // 模拟数据
   return {
     totalQuestions: 1256,
-    participantStudents: 36,
+    participantStudents: 87,
     subjectCategories: 12,
     todayQuestions: 45,
     questionTypeDistribution: [
@@ -72,22 +72,22 @@ export const getCourseAnalytics = async (courseId: string): Promise<AnalyticsDat
       { level: '复杂', count: 76, percentage: 6.0 },
     ],
     subjectDistribution: [
-      { subject: '数学', count: 380, percentage: 30.3 },
-      { subject: '物理', count: 280, percentage: 22.3 },
-      { subject: '化学', count: 220, percentage: 17.5 },
-      { subject: '英语', count: 180, percentage: 14.3 },
-      { subject: '语文', count: 120, percentage: 9.6 },
-      { subject: '其他', count: 76, percentage: 6.0 },
+      { subject: '深度学习', count: 380, percentage: 30.3 },
+      { subject: '人工智能基础', count: 280, percentage: 22.3 },
+      { subject: '数据分析与挖掘', count: 220, percentage: 17.5 },
+      { subject: '卷积神经网络', count: 180, percentage: 14.3 },
+      { subject: 'JAVA EE', count: 120, percentage: 9.6 },
+      { subject: 'Python基础', count: 76, percentage: 6.0 },
     ],
     hotKeywords: [
-      { keyword: '导数', count: 89, trend: 'up' },
-      { keyword: '积分', count: 76, trend: 'up' },
-      { keyword: '向量', count: 65, trend: 'stable' },
-      { keyword: '概率', count: 58, trend: 'down' },
-      { keyword: '三角函数', count: 52, trend: 'up' },
-      { keyword: '数列', count: 45, trend: 'stable' },
-      { keyword: '圆锥曲线', count: 38, trend: 'up' },
-      { keyword: '立体几何', count: 32, trend: 'down' },
+      { keyword: '卷积', count: 89, trend: 'up' },
+      { keyword: '向量', count: 76, trend: 'up' },
+      { keyword: '池化', count: 65, trend: 'stable' },
+      { keyword: '样式', count: 58, trend: 'down' },
+      { keyword: '贪心算法', count: 52, trend: 'up' },
+      { keyword: '抽象特征', count: 45, trend: 'stable' },
+      { keyword: '边缘检测', count: 38, trend: 'up' },
+      { keyword: '过滤器', count: 32, trend: 'down' },
     ],
   };
 };
@@ -113,10 +113,10 @@ export const getStudentDetail = async (
   return {
     id: studentId,
     studentId: '2024001',
-    name: '张三',
+    name: '秦浩轩',
     className: '高三(1)班',
     totalQuestions: 28,
-    mainSubject: '数学',
+    mainSubject: '深度学习',
     lastActive: '2小时前',
     complexityDistribution: [
       { level: '简单', count: 8, percentage: 28.6 },
@@ -134,9 +134,9 @@ export const getStudentDetail = async (
       { date: '03-31', score: 88 },
     ],
     learningAdvice: [
-      '建议加强导数应用题的练习，特别是最值问题和切线问题',
-      '可以尝试挑战更多综合性题目，提升解题思维的灵活性',
-      '保持良好的提问习惯，注意总结同类型问题的解题方法',
+      '先吃透基础数学与核心原理，不要急于堆项目',
+      '动手复现经典模型，用小数据集练手',
+      '坚持读论文 + 做笔记，形成自己的知识体系',
     ],
   };
 };

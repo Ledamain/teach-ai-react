@@ -1,8 +1,7 @@
-"use client";
-
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef } from "react";
+import Image from "next/image";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Button, Form, Input, Typography, message } from "antd";
+import { Button, Form, Input, Typography } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
 import styles from "../../styles/login/index.module.css";
 import { useRouter } from "next/router";
@@ -33,14 +32,14 @@ const containerVariants = {
         transition: {
             duration: 0.5,
             ease: [0.19, 1, 0.22, 1],
-            staggerChildren: 0.08,
-        },
+            staggerChildren: 0.08
+        }
     },
     exit: {
         opacity: 0,
         y: -10,
-        transition: { duration: 0.3 },
-    },
+        transition: { duration: 0.3 }
+    }
 };
 
 const itemVariants = {
@@ -48,8 +47,8 @@ const itemVariants = {
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.4, ease: [0.19, 1, 0.22, 1] },
-    },
+        transition: { duration: 0.4, ease: [0.19, 1, 0.22, 1] }
+    }
 };
 
 const successVariants = {
@@ -60,9 +59,9 @@ const successVariants = {
         transition: {
             duration: 0.5,
             ease: [0.19, 1, 0.22, 1],
-            staggerChildren: 0.1,
-        },
-    },
+            staggerChildren: 0.1
+        }
+    }
 };
 
 const checkmarkVariants = {
@@ -74,81 +73,23 @@ const checkmarkVariants = {
             type: "spring",
             stiffness: 200,
             damping: 15,
-            delay: 0.2,
-        },
-    },
-};
-
-// 生成随机4位数字验证码
-const generateCaptcha = (): string => {
-    return "7539";
+            delay: 0.2
+        }
+    }
 };
 
 export default function Home() {
     const router = useRouter();
-    const [form] = Form.useForm();
     const [isSuccess, setIsSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // 验证码相关状态
-    const [captcha, setCaptcha] = useState<string>("");
-    const [countdown, setCountdown] = useState<number>(0);
-    const [isCaptchaSent, setIsCaptchaSent] = useState<boolean>(false);
-    const countdownRef = useRef<NodeJS.Timeout | null>(null);
-
-    // 清理倒计时
-    useEffect(() => {
-        return () => {
-            if (countdownRef.current) {
-                clearInterval(countdownRef.current);
-            }
-        };
-    }, []);
-
-    // 获取验证码
-    const handleGetCaptcha = useCallback(() => {
-        // 生成新验证码
-        const newCaptcha = generateCaptcha();
-        setCaptcha(newCaptcha);
-        setIsCaptchaSent(true);
-
-        // 显示验证码（修复：字符串未闭合 + 模板字符串替换）
-        message.success("验证码已发送");
-
-        // 开始60秒倒计时
-        setCountdown(60);
-
-        if (countdownRef.current) {
-            clearInterval(countdownRef.current);
-        }
-
-        countdownRef.current = setInterval(() => {
-            setCountdown((prev) => {
-                if (prev <= 1) {
-                    if (countdownRef.current) {
-                        clearInterval(countdownRef.current);
-                        countdownRef.current = null;
-                    }
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-    }, []);
-
-    // 登录成功礼花动画
+    // 登录成功礼花动画（和你Vue效果完全一致）
     const playConfetti = () => {
         const duration = 3000;
         const animationEnd = Date.now() + duration;
-        const defaults = {
-            startVelocity: 30,
-            spread: 360,
-            ticks: 60,
-            zIndex: 999,
-        };
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 999 };
 
-        const randomInRange = (min: number, max: number) =>
-            Math.random() * (max - min) + min;
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
         // 左侧礼花 向右发射
         const leftInterval = setInterval(() => {
@@ -161,7 +102,7 @@ export default function Home() {
                 origin: { x: 0, y: 0.5 },
                 particleCount,
                 angle: randomInRange(0, 60),
-                colors: ["#FF3E4D", "#FF9F1C", "#FFCC00", "#FFEA00"],
+                colors: ['#FF3E4D', '#FF9F1C', '#FFCC00', '#FFEA00']
             });
         }, 250);
 
@@ -176,51 +117,34 @@ export default function Home() {
                 origin: { x: 1, y: 0.5 },
                 particleCount,
                 angle: randomInRange(120, 180),
-                colors: ["#00CFFD", "#04E762", "#AA00FF", "#00B4D8"],
+                colors: ['#00CFFD', '#04E762', '#AA00FF', '#00B4D8']
             });
         }, 250);
     };
 
-    const handleFinish = async (values: {
-        username: string;
-        password: string;
-        captchaInput: string;
-    }) => {
-        // 验证码校验
-        if (!isCaptchaSent) {
-            message.error("请先获取验证码");
-            return;
-        }
-
-        if (values.captchaInput !== captcha) {
-            message.error("验证码错误，请重新输入");
-            return;
-        }
-
+    const handleFinish = async (values: { username: string; password: string }) => {
         setLoading(true);
         try {
-            await login({ username: values.username, password: values.password });
+            await login(values);
             setIsSuccess(true);
 
             setTimeout(() => {
-                playConfetti();
+                playConfetti(); // 播放新礼花效果
             }, 50);
 
             setTimeout(() => {
                 router.push("/chat");
             }, 2000);
+
         } catch (error) {
-            console.log("登录失败：", error);
+            console.log('登录失败：', error);
             setIsSuccess(false);
             setLoading(false);
         }
     };
 
     return (
-        <div
-            // 修复：模板字符串 → + 拼接
-            className={geistSans.className + " " + geistMono.className + " " + styles.pageWrapper}
-        >
+        <div className={`${geistSans.className} ${geistMono.className} ${styles.pageWrapper}`}>
             <motion.div
                 className={styles.loginCard}
                 initial="hidden"
@@ -238,7 +162,7 @@ export default function Home() {
                         >
                             <motion.div className={styles.header} variants={itemVariants}>
                                 <Title level={2} className={styles.title}>
-                                    登录到 AI智学教学辅助平台
+                                    登录到 智汇伴学教学辅助平台
                                 </Title>
                                 <Text className={styles.subtitle}>
                                     欢迎回来，请开启您的 AI 对话之旅
@@ -246,7 +170,6 @@ export default function Home() {
                             </motion.div>
 
                             <Form
-                                form={form}
                                 onFinish={handleFinish}
                                 layout="vertical"
                                 size="large"
@@ -255,7 +178,7 @@ export default function Home() {
                                 <motion.div variants={itemVariants}>
                                     <Form.Item
                                         label="账号"
-                                        name="username"
+                                        name='username'
                                         rules={[{ required: true, message: "请输入账号" }]}
                                     >
                                         <Input placeholder="您的账号" className={styles.input} />
@@ -265,45 +188,10 @@ export default function Home() {
                                 <motion.div variants={itemVariants}>
                                     <Form.Item
                                         label="密码"
-                                        name="password"
+                                        name='password'
                                         rules={[{ required: true, message: "请输入密码" }]}
                                     >
-                                        <Input.Password
-                                            placeholder="您的密码"
-                                            className={styles.input}
-                                        />
-                                    </Form.Item>
-                                </motion.div>
-
-                                <motion.div variants={itemVariants}>
-                                    <Form.Item
-                                        label="验证码"
-                                        required
-                                        style={{ marginBottom: 24 }}
-                                    >
-                                        <div className={styles.captchaRow}>
-                                            <Form.Item
-                                                name="captchaInput"
-                                                noStyle
-                                                rules={[{ required: true, message: "请输入验证码" }]}
-                                            >
-                                                <Input
-                                                    placeholder="请输入验证码"
-                                                    // 修复：缺少空格 + 模板字符串替换
-                                                    className={styles.input + " " + styles.captchaInput}
-                                                    maxLength={4}
-                                                />
-                                            </Form.Item>
-                                            <Button
-                                                type="default"
-                                                className={styles.captchaBtn}
-                                                onClick={handleGetCaptcha}
-                                                disabled={countdown > 0}
-                                            >
-                                                {/* 修复：模板字符串 → + 拼接 */}
-                                                {countdown > 0 ? countdown + "s 后重新获取" : "获取验证码"}
-                                            </Button>
-                                        </div>
+                                        <Input.Password placeholder="您的密码" className={styles.input} />
                                     </Form.Item>
                                 </motion.div>
 
@@ -321,10 +209,7 @@ export default function Home() {
                                     </Form.Item>
                                 </motion.div>
 
-                                <motion.div
-                                    variants={itemVariants}
-                                    className={styles.registerLink}
-                                >
+                                <motion.div variants={itemVariants} className={styles.registerLink}>
                                     <span>没有账号？</span>
                                     <Link href="/register">立即注册</Link>
                                 </motion.div>
@@ -338,22 +223,13 @@ export default function Home() {
                             initial="hidden"
                             animate="visible"
                         >
-                            <motion.div
-                                className={styles.successIcon}
-                                variants={checkmarkVariants}
-                            >
+                            <motion.div className={styles.successIcon} variants={checkmarkVariants}>
                                 <CheckOutlined />
                             </motion.div>
-                            <motion.div
-                                className={styles.successTitle}
-                                variants={itemVariants}
-                            >
+                            <motion.div className={styles.successTitle} variants={itemVariants}>
                                 登录成功
                             </motion.div>
-                            <motion.div
-                                className={styles.successSubtitle}
-                                variants={itemVariants}
-                            >
+                            <motion.div className={styles.successSubtitle} variants={itemVariants}>
                                 正在为您跳转到对话页面...
                             </motion.div>
                         </motion.div>
@@ -361,9 +237,7 @@ export default function Home() {
                 </AnimatePresence>
 
                 <motion.div className={styles.footer} variants={itemVariants}>
-                    <Text className={styles.footerText}>
-                        © 2024 AI智学智能辅助平台. All rights reserved.
-                    </Text>
+                    <Text className={styles.footerText}>2024 智汇伴学智能辅助平台.</Text>
                 </motion.div>
             </motion.div>
         </div>

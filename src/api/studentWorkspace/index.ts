@@ -38,7 +38,7 @@ export const getStudentAnalytics = async (
   // 模拟数据
   return {
     studentId,
-    studentName: '张三',
+    studentName: '秦浩轩',
     className: '高三(1)班',
     totalQuestions: 56,
     mainSubject: '数学',
@@ -62,15 +62,15 @@ export const getStudentAnalytics = async (
       { date: '03-31', score: 88 },
     ],
     subjectDistribution: [
-      { subject: '数学', count: 28, percentage: 50.0 },
-      { subject: '物理', count: 12, percentage: 21.4 },
-      { subject: '化学', count: 10, percentage: 17.9 },
-      { subject: '英语', count: 6, percentage: 10.7 },
+      { subject: '前馈网络', count: 28, percentage: 50.0 },
+      { subject: '卷积网络', count: 12, percentage: 21.4 },
+      { subject: '循环网络', count: 10, percentage: 17.9 },
+      { subject: '自注意力', count: 6, percentage: 10.7 },
     ],
     recentAssignments: [
-      { id: '1', title: '高等数学期中测试', score: 92, totalScore: 100, submitTime: '2024-04-01' },
-      { id: '2', title: '函数与极限练习', score: 88, totalScore: 100, submitTime: '2024-03-28' },
-      { id: '3', title: '导数应用练习', score: 78, totalScore: 100, submitTime: '2024-03-25' },
+      { id: '1', title: '深度学习基础第一小节作业', score: 92, totalScore: 100, submitTime: '2024-04-01' },
+      { id: '2', title: '深度学习基础第二小节作业', score: 88, totalScore: 100, submitTime: '2024-03-28' },
+      // { id: '3', title: '导数应用练习', score: 78, totalScore: 100, submitTime: '2024-03-25' },
     ],
     learningAdvice: [
       '建议加强导数应用题的练习，特别是最值问题和切线问题',
