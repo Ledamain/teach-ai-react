@@ -1,6 +1,14 @@
 import {LoginParams, LoginResult, RegisterParams} from "@/types/login/LoginType";
 import {request} from "@/utils/request";
 import {message} from "antd";
+import axios from "axios";
+
+const getApiUrl = (path: string): string => {
+    if (typeof window === 'undefined') return path;
+    const base = process.env.NEXT_PUBLIC_API_URL_LOC?.replace(/\/$/, '');
+    if (!base) return path.startsWith('/') ? path : `/api/${path.replace(/^\//, '')}`;
+    return `${base}${path.startsWith('/') ? path : `/${path}`}`;
+};
 
 export async function login(
     params: Pick<LoginParams, "username" | "password">
@@ -44,4 +52,21 @@ export async function register(
         message.error('注册失败');
         return false;
     }
+}
+/** 获取验证码 */
+export async function getCaptcha(data: any) {
+    return axios.post(getApiUrl(`/admin-api/system/captcha/get`), data, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}
+
+/** 校验验证码 */
+export async function checkCaptcha(data: any) {
+    return axios.post(getApiUrl(`/admin-api/system/captcha/check`), data, {
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
 }

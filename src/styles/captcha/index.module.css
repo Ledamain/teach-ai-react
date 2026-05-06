@@ -1,0 +1,241 @@
+/* ===== Modal ===== */
+.modal :global(.ant-modal-content) {
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 0;
+    box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.08),
+            0 8px 32px rgba(0, 0, 0, 0.12),
+            0 32px 64px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+}
+
+/* ===== Container ===== */
+.container {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    user-select: none;
+    font-family:
+            'Söhne', ui-sans-serif, system-ui, -apple-system,
+            'Segoe UI', sans-serif;
+}
+
+/* ===== Header ===== */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 14px 20px;
+    border-bottom: 1px solid #ececec;
+    background: #ffffff;
+}
+
+.title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0d0d0d;
+    letter-spacing: -0.01em;
+}
+
+.headerActions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.iconBtn {
+    font-size: 14px;
+    color: #8e8ea0;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.iconBtn:hover {
+    color: #0d0d0d;
+    background: #f4f4f5;
+}
+
+/* ===== Image Area ===== */
+.imageWrap {
+    position: relative;
+    width: 310px;
+    height: 155px;
+    margin: 18px auto 0 auto;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f4f4f5;
+    border: 1px solid #ececec;
+}
+
+.loadingBox {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8e8ea0;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.bgImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.jigsawImage {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: auto;
+    cursor: grab;
+    transition: left 0s;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* ===== Slider Area ===== */
+.sliderArea {
+    padding: 16px 20px 0 20px;
+}
+
+.track {
+    position: relative;
+    width: 340px;
+    height: 44px;
+    background: #f4f4f5;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ececec;
+}
+
+.trackFill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: #ececec;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+}
+
+/* Success — OpenAI green-tinted */
+.trackSuccess {
+    background: linear-gradient(90deg, #d4f5e9, #10a37f) !important;
+}
+
+/* Error — subtle red */
+.trackError {
+    background: linear-gradient(90deg, #fde8e8, #ef4444) !important;
+}
+
+.trackTip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12.5px;
+    color: #8e8ea0;
+    pointer-events: none;
+    z-index: 1;
+    letter-spacing: 0.2px;
+    font-weight: 400;
+}
+
+.statusTip {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12.5px;
+    color: #353740;
+    pointer-events: none;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+/* ===== Slider Button ===== */
+.sliderBtn {
+    position: absolute;
+    top: 2px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.08),
+            0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    z-index: 10;
+    transition:
+            box-shadow 0.15s ease,
+            background 0.15s ease,
+            border-color 0.15s ease;
+    border: 1px solid #ececec;
+}
+
+.sliderBtn:hover {
+    box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.1),
+            0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.sliderBtnActive {
+    cursor: grabbing;
+    box-shadow:
+            0 0 0 1.5px #10a37f,
+            0 4px 16px rgba(16, 163, 127, 0.2);
+    border-color: #10a37f;
+}
+
+.sliderBtnSuccess {
+    border-color: #10a37f;
+    background: #f0fdf8;
+    box-shadow:
+            0 0 0 1.5px #10a37f,
+            0 2px 8px rgba(16, 163, 127, 0.15);
+}
+
+.sliderBtnError {
+    border-color: #ef4444;
+    background: #fff5f5;
+    box-shadow:
+            0 0 0 1.5px #ef4444,
+            0 2px 8px rgba(239, 68, 68, 0.15);
+}
+
+.sliderArrow {
+    font-size: 20px;
+    color: #8e8ea0;
+    line-height: 1;
+    font-weight: 500;
+}
+
+/* ===== Footer ===== */
+.footer {
+    padding: 12px 20px 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.footerTip {
+    font-size: 11.5px;
+    color: #c5c5d2;
+    letter-spacing: 0.2px;
+    font-weight: 400;
+}

@@ -9,6 +9,8 @@ import { login } from "@/api/login";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
+import SliderCaptcha from "@/components/Verification";
+
 
 const { Title, Text } = Typography;
 
@@ -82,6 +84,8 @@ export default function Home() {
     const router = useRouter();
     const [isSuccess, setIsSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [captchaOpen, setCaptchaOpen] = useState(false);
+    const formRef = useRef(null);
 
     // 登录成功礼花动画（和你Vue效果完全一致）
     const playConfetti = () => {
@@ -121,6 +125,13 @@ export default function Home() {
             });
         }, 250);
     };
+
+    const handleLogin = () => {
+        // 有验证码先弹出验证
+        setLoading(true);
+        setCaptchaOpen( true)
+    };
+
 
     const handleFinish = async (values: { username: string; password: string }) => {
         setLoading(true);
@@ -170,7 +181,8 @@ export default function Home() {
                             </motion.div>
 
                             <Form
-                                onFinish={handleFinish}
+                                ref={formRef}
+                                onFinish={handleLogin}
                                 layout="vertical"
                                 size="large"
                                 className={styles.form}
@@ -240,6 +252,23 @@ export default function Home() {
                     <Text className={styles.footerText}>2024 智汇伴学智能辅助平台.</Text>
                 </motion.div>
             </motion.div>
+
+            <SliderCaptcha
+                open={captchaOpen}
+                onSuccess={async (captchaVerification) => {
+                    setCaptchaOpen(false);
+                    console.log('验证通过，凭证:', captchaVerification);
+                    const values = formRef.current?.getFieldsValue();
+                    if (values){
+                        await handleFinish(values);
+                    }
+                    // 将 captchaVerification 带入登录接口
+                }}
+                onClose={() => {
+                    setCaptchaOpen(false)
+                    setLoading(false)
+                }}
+            />
         </div>
     );
 }
