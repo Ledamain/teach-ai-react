@@ -14,7 +14,7 @@ import {
     FileTextOutlined,
     VerticalLeftOutlined,
     VerticalRightOutlined, AppstoreOutlined,
-    TeamOutlined, SwapOutlined, FileDoneOutlined, ReadOutlined, FileImageOutlined,VideoCameraAddOutlined
+    TeamOutlined, SwapOutlined, FileDoneOutlined, ReadOutlined, FileImageOutlined, VideoCameraAddOutlined, PlusOutlined
 } from '@ant-design/icons';
 import {
     Conversations,
@@ -69,6 +69,7 @@ import HotQueryBubbles from "@/components/HotQueryBubbles";
 import DocPreviewPanel from "@/components/DocPreviewPanel";
 import {MessageContent} from '@/components/MessageContent'
 import VideoGeneratePage from "@/pages/video";
+import DigitalChickButton, {AvatarConnectButton} from "@/components/button/DigitalChickButton";
 
 export type ChatChunkCallback = (chunk: string, isFinal: boolean) => void;
 
@@ -977,6 +978,16 @@ const Chat: React.FC = () => {
                                 exit="exit"
                                 style={{ width: '100%', height: '100%' }}
                             >
+                                {/* ======================== 悬浮按钮 ======================== */}
+                                <AvatarConnectButton
+                                    onClick = {() => {
+                                        router.push('/digital')
+                                    }}
+                                    isConnecting={false}
+                                    isConnected={false}
+                                    className="absolute top-6 right-6 z-50"
+                                />
+
                                 {/* PPT 视图 */}
                                 {currentView === 'ppt' && (
                                     <motion.div

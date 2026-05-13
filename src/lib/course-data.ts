@@ -27,7 +27,7 @@ export const courseData: Course = {
   category: '人工智能',
   chapterCount: 4,
   description: '本课程旨在帮助学生和教师学习如何使用人工智能技术来提升学习和工作效率。课程涵盖AI应用实践入门、提示词工程、智能办公以及生成式人工智能等核心内容，通过理论与实践相结合的方式，让学习者能够快速掌握AI工具的使用方法，并将其应用于实际场景中。',
-  coverImage: 'https://teach-ai.tos-cn-beijing.volces.com/%E6%96%B0%E5%AF%B9%E8%AF%9D.png',
+  coverImage: 'https://teach-ai.tos-cn-beijing.volces.com/ai%E9%80%9A%E8%AF%86%E8%AF%BE.png',
   chapters: [
     {
       id: 'chapter-1',

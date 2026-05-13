@@ -1,0 +1,329 @@
+/* From Uiverse.io by dexter-st */
+.btn-container {
+    --btn-color: #d8ff7c;
+    --corner-color: #0002;
+    --corner-dist: 24px;
+    --corner-multiplier: 1.5;
+    --timing-function: cubic-bezier(0, 0, 0, 2.5);
+    --duration: 250ms;
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn {
+    position: relative;
+    min-width: 160px;
+    min-height: calc(var(--corner-dist) * 2);
+    border-radius: 16px;
+    border: none;
+    padding: 0.25em 1em;
+
+    background: linear-gradient(#fff2, #0001), var(--btn-color);
+    box-shadow:
+            1px 1px 2px -1px #fff inset,
+            0 2px 1px #00000010,
+            0 4px 2px #00000010,
+            0 8px 4px #00000010,
+            0 16px 8px #00000010,
+            0 32px 16px #00000010;
+
+    transition:
+            transform var(--duration) var(--timing-function),
+            filter var(--duration) var(--timing-function);
+    -webkit-transition:
+            transform var(--duration) var(--timing-function),
+            -webkit-filter var(--duration) var(--timing-function);
+
+    cursor: pointer;
+}
+
+.btn-drawer {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+
+    min-height: 32px;
+    border-radius: 16px;
+    border: none;
+    padding: 0.25em 1em;
+    font-size: 0.8em;
+    font-weight: 600;
+    font-family: "Poppins", monospace;
+    color: #0009;
+
+    background: linear-gradient(#fff2, #0001), var(--btn-color);
+    background-color: #fbff13;
+    opacity: 0;
+
+    transition:
+            transform calc(0.5 * var(--duration)) ease,
+            filter var(--duration) var(--timing-function),
+            opacity calc(0.5 * var(--duration)) ease;
+    -webkit-transition:
+            transform calc(0.5 * var(--duration)) ease,
+            -webkit-filter var(--duration) var(--timing-function),
+            opacity calc(0.5 * var(--duration)) ease;
+    filter: blur(2px);
+    -webkit-filter: blur(2px);
+}
+
+.transition-top {
+    top: 0;
+    left: 0;
+    border-radius: 12px 12px 0 0;
+    align-items: start;
+}
+.transition-bottom {
+    bottom: 0;
+    right: 0;
+    border-radius: 0 0 12px 12px;
+    align-items: end;
+}
+
+.btn-text {
+    display: inline-block;
+
+    font-size: 1.25em;
+    font-family: "Syne", "Poppins", "Inter", sans-serif;
+    font-weight: 600;
+    color: #5550;
+
+    background-image: linear-gradient(#444, #000a);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006);
+    -webkit-filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006);
+
+    transition:
+            transform var(--duration) var(--timing-function),
+            filter var(--duration) var(--timing-function),
+            color var(--duration) var(--timing-function);
+    -webkit-transition:
+            transform var(--duration) var(--timing-function),
+            -webkit-filter var(--duration) var(--timing-function),
+            color var(--duration) var(--timing-function);
+}
+
+.btn-corner {
+    position: absolute;
+    width: 32px;
+
+    fill: none;
+    stroke: var(--corner-color);
+
+    transition:
+            transform var(--duration) var(--timing-function),
+            filter var(--duration) var(--timing-function);
+    -webkit-transition:
+            transform var(--duration) var(--timing-function),
+            -webkit-filter var(--duration) var(--timing-function);
+}
+
+.btn-corner:nth-of-type(1) {
+    top: 0;
+    left: 0;
+    transform: translate(
+            calc(-1 * var(--corner-dist)),
+            calc(-1 * var(--corner-dist))
+    )
+    rotate(90deg);
+}
+.btn-corner:nth-of-type(2) {
+    top: 0;
+    right: 0;
+    transform: translate(var(--corner-dist), calc(-1 * var(--corner-dist)))
+    rotate(180deg);
+}
+.btn-corner:nth-of-type(3) {
+    bottom: 0;
+    right: 0;
+    transform: translate(var(--corner-dist), var(--corner-dist)) rotate(-90deg);
+}
+.btn-corner:nth-of-type(4) {
+    bottom: 0;
+    left: 0;
+    transform: translate(calc(-1 * var(--corner-dist)), var(--corner-dist))
+    rotate(0deg);
+}
+
+.btn-container:has(.btn:hover),
+.btn-container:has(.btn:focus-visible) {
+    .btn {
+        transform: scale(1.05);
+        filter: drop-shadow(0 16px 16px #0002);
+        -webkit-filter: drop-shadow(0 16px 16px #0002);
+    }
+    .transition-top {
+        transform: translateY(-24px) rotateZ(4deg);
+        filter: blur(0px);
+        -webkit-filter: blur(0px);
+        animation: hue-anim 3s infinite linear;
+        -webkit-animation: hue-anim 3s infinite linear;
+        opacity: 1;
+    }
+    .transition-bottom {
+        transform: translateY(24px) rotateZ(4deg);
+        filter: blur(0px);
+        -webkit-filter: blur(0px);
+        animation: hue-anim 3s infinite linear;
+        -webkit-animation: hue-anim 3s infinite linear;
+        opacity: 1;
+    }
+    .btn-text {
+        filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006)
+        drop-shadow(0px 6px 2px #0003);
+        -webkit-filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006)
+        drop-shadow(0px 6px 2px #0003);
+        transform: scale(1.05);
+        color: #0008;
+    }
+
+    --corner-color: #0004;
+    .btn-corner:first-of-type {
+        transform: translate(
+                calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
+                calc(-1 * var(--corner-multiplier) * var(--corner-dist))
+        )
+        rotate(90deg);
+        filter: drop-shadow(-10px 10px 1px var(--corner-color))
+        drop-shadow(-20px 20px 2px var(--corner-color));
+        -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color))
+        drop-shadow(-20px 20px 2px var(--corner-color));
+    }
+    .btn-corner:nth-of-type(2) {
+        transform: translate(
+                calc(var(--corner-multiplier) * var(--corner-dist)),
+                calc(-1 * var(--corner-multiplier) * var(--corner-dist))
+        )
+        rotate(180deg);
+        filter: drop-shadow(-10px 10px 1px var(--corner-color))
+        drop-shadow(-20px 20px 2px var(--corner-color));
+        -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color))
+        drop-shadow(-20px 20px 2px var(--corner-color));
+    }
+    @-moz-document url-prefix() {
+        .btn-corner:nth-of-type(2) {
+            filter: drop-shadow(10px -10px 1px var(--corner-color))
+            drop-shadow(20px -20px 2px var(--corner-color));
+        }
+    }
+    .btn-corner:nth-of-type(3) {
+        transform: translate(
+                calc(var(--corner-multiplier) * var(--corner-dist)),
+                calc(var(--corner-multiplier) * var(--corner-dist))
+        )
+        rotate(-90deg);
+        filter: drop-shadow(-10px 10px 1px var(--corner-color))
+        drop-shadow(-20px 20px 2px var(--corner-color));
+        -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color))
+        drop-shadow(-20px 20px 2px var(--corner-color));
+    }
+    .btn-corner:nth-of-type(4) {
+        transform: translate(
+                calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
+                calc(var(--corner-multiplier) * var(--corner-dist))
+        )
+        rotate(0deg);
+        filter: drop-shadow(-10px 10px 1px var(--corner-color))
+        drop-shadow(-20px 20px 2px var(--corner-color));
+        -webkit-filter: drop-shadow(-10px 10px 1px var(--corner-color))
+        drop-shadow(-20px 20px 2px var(--corner-color));
+    }
+}
+
+.btn-container:has(.btn:active) {
+    .btn {
+        transform: scale(0.95);
+        filter: drop-shadow(0 10px 4px #0002);
+        -webkit-filter: drop-shadow(0 10px 4px #0002);
+    }
+    .transition-top,
+    .transition-bottom {
+        transform: translateY(0px) scale(0.5);
+    }
+    .btn-text {
+        filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006)
+        drop-shadow(0px 6px 2px #0003);
+        -webkit-filter: drop-shadow(0 1px 0 #fff6) drop-shadow(0 -1px 0 #0006)
+        drop-shadow(0px 6px 2px #0003);
+        transform: scale(1);
+        color: #000a;
+    }
+    --corner-color: #0005;
+    --corner-multiplier: 0.95;
+    .btn-corner:first-of-type {
+        transform: translate(
+                calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
+                calc(-1 * var(--corner-multiplier) * var(--corner-dist))
+        )
+        rotate(90deg);
+        filter: drop-shadow(-10px 10px 2px var(--corner-color))
+        drop-shadow(-20px 20px 3px var(--corner-color));
+        -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color))
+        drop-shadow(-20px 20px 3px var(--corner-color));
+    }
+    .btn-corner:nth-of-type(2) {
+        transform: translate(
+                calc(var(--corner-multiplier) * var(--corner-dist)),
+                calc(-1 * var(--corner-multiplier) * var(--corner-dist))
+        )
+        rotate(180deg);
+        filter: drop-shadow(-10px 10px 2px var(--corner-color))
+        drop-shadow(-20px 20px 3px var(--corner-color));
+        -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color))
+        drop-shadow(-20px 20px 3px var(--corner-color));
+    }
+    @-moz-document url-prefix() {
+        .btn-corner:nth-of-type(2) {
+            filter: drop-shadow(10px -10px 2px var(--corner-color))
+            drop-shadow(20px -20px 3px var(--corner-color));
+        }
+    }
+    .btn-corner:nth-of-type(3) {
+        transform: translate(
+                calc(var(--corner-multiplier) * var(--corner-dist)),
+                calc(var(--corner-multiplier) * var(--corner-dist))
+        )
+        rotate(-90deg);
+        filter: drop-shadow(-10px 10px 2px var(--corner-color))
+        drop-shadow(-20px 20px 3px var(--corner-color));
+        -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color))
+        drop-shadow(-20px 20px 3px var(--corner-color));
+    }
+    .btn-corner:nth-of-type(4) {
+        transform: translate(
+                calc(-1 * var(--corner-multiplier) * var(--corner-dist)),
+                calc(var(--corner-multiplier) * var(--corner-dist))
+        )
+        rotate(0deg);
+        filter: drop-shadow(-10px 10px 2px var(--corner-color))
+        drop-shadow(-20px 20px 3px var(--corner-color));
+        -webkit-filter: drop-shadow(-10px 10px 2px var(--corner-color))
+        drop-shadow(-20px 20px 3px var(--corner-color));
+    }
+}
+
+@keyframes hue-anim {
+    0%,
+    100% {
+        filter: hue-rotate(0deg);
+        -webkit-filter: hue-rotate(0deg);
+    }
+    50% {
+        filter: hue-rotate(-70deg);
+        -webkit-filter: hue-rotate(-70deg);
+    }
+}
+@-webkit-keyframes hue-anim {
+    0%,
+    100% {
+        -webkit-filter: hue-rotate(0deg);
+    }
+    50% {
+        -webkit-filter: hue-rotate(-70deg);
+    }
+}

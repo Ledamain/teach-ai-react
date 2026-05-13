@@ -249,7 +249,7 @@ export default function Home() {
                 </AnimatePresence>
 
                 <motion.div className={styles.footer} variants={itemVariants}>
-                    <Text className={styles.footerText}>2024 智汇伴学智能辅助平台.</Text>
+                    <Text className={styles.footerText}>2026 智汇伴学智能辅助平台.</Text>
                 </motion.div>
             </motion.div>
 
