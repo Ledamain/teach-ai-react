@@ -18,7 +18,7 @@
 
 ### Graph架构
 
-![graph](./web/doc/graph架构.png)
+![graph](./web/doc/graph.png)
 
 ## 项目特点
 
