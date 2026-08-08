@@ -1,10 +1,10 @@
-# AI智学教学辅助平台
+# 智育教学辅助平台
 
 > 基于 Next.js + React 构建的 AI 教学辅助前端项目，面向教师与学生两类用户，提供智能对话、课程工作台、知识库、作业练习、数据分析以及多模态内容生成等能力。
 
 ## 项目介绍
 
-AI智学教学辅助平台是一个围绕教学与学习场景设计的 AI 辅助系统前端。项目通过统一的 AI 对话入口连接智能问答、文件上传、课程知识库和多模态生成能力，并结合教师工作台、学生工作台、课程管理、作业练习、学习数据分析、AI 通识课等模块，为教学和学习提供一站式辅助支持。
+智育教学辅助平台是一个围绕教学与学习场景设计的 AI 辅助系统前端。项目通过统一的 AI 对话入口连接智能问答、文件上传、课程知识库和多模态生成能力，并结合教师工作台、学生工作台、课程管理、作业练习、学习数据分析、AI 通识课等模块，为教学和学习提供一站式辅助支持。
 
 系统支持两种角色：
 
@@ -18,7 +18,7 @@ AI智学教学辅助平台是一个围绕教学与学习场景设计的 AI 辅�
 
 ### Graph架构
 
-![graph](docraph架构.png)
+![graph](./web/doc/graph架构.png)
 
 ## 项目特点
 
@@ -260,16 +260,16 @@ teach-ai-react
 
 ### 关键技术组成
 
-| 类别 | 说明 |
-| --- | --- |
+| 类别 | 说明                               |
+| --- |----------------------------------|
 | 微服务框架 | Spring Boot、Spring Cloud Alibaba |
-| AI 编排 | LangChain4j |
-| 向量检索 | Milvus |
-| 业务数据存储 | MySQL |
-| 缓存与会话 | Redis |
-| 历史记录/中间数据 | MongoDB |
-| 文件存储 | S3 兼容对象存储 |
-| 异步任务 | RocketMQ、定时任务调度 |
+| AI 编排 | LangChain4j - LangGraph4j        |
+| 向量检索 | Milvus                           |
+| 业务数据存储 | MySQL                            |
+| 缓存与会话 | Redis                            |
+| 历史记录/中间数据 | MongoDB                          |
+| 文件存储 | S3 兼容对象存储                        |
+| 异步任务 | RocketMQ、定时任务调度                  |
 
 ### 安全与部署说明
 
@@ -282,40 +282,40 @@ teach-ai-react
 
 ### 登录页面
 
-![登录页面截图](docogin.jpg)
+![登录页面截图](./web/doc/login.jpg)
 
 ### AI 对话页面
 
-![AI 对话页面截图1](dochat-1.png)
+![AI 对话页面截图1](./web/doc/chat-1.png)
 
-![AI 对话页面截图2](dochat-2.png)
+![AI 对话页面截图2](./web/doc/chat-2.png)
 
-![AI 对话页面截图3](dochat-3.png)
+![AI 对话页面截图3](./web/doc/chat-3.png)
 
-![AI 对话页面截图4](dochat-4.png)
+![AI 对话页面截图4](./web/doc/chat-4.png)
 
 ### 工作台（教师）
 
-![教师工作台截图1](doceacher-workspace-1.png)
+![教师工作台截图1](./web/doc/teacher-workspace-1.png)
 
-![教师工作台截图2](doceacher-workspace-2.png)
+![教师工作台截图2](./web/doc/teacher-workspace-2.png)
 
-![教师工作台截图3](doceacher-workspace-3.png)
+![教师工作台截图3](./web/doc/teacher-workspace-3.png)
 
-![教师工作台截图4](doceacher-workspace-4.png)
+![教师工作台截图4](./web/doc/teacher-workspace-4.png)
 
-![教师工作台截图5](doceacher-workspace-5.png)
+![教师工作台截图5](./web/doc/teacher-workspace-5.png)
 
 ### AI通识课
 
-![AI通识课截图](doci-class.png)
+![AI通识课截图](./web/doc/ai-class.png)
 
 ### PPT 生成页面
 
-![PPT 生成页面截图](docpt.png)
+![PPT 生成页面截图](./web/doc/ppt.png)
 
 ### 图片/视频生成页面
 
-![图片或视频生成页面截图1](docedia-1.png)
+![图片或视频生成页面截图1](./web/doc/media-1.png)
 
-![图片或视频生成页面截图2](docedia-2.png)
+![图片或视频生成页面截图2](./web/doc/media-2.png)
