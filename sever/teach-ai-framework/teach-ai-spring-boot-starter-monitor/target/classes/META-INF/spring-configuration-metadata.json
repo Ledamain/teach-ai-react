@@ -1,0 +1,14 @@
+{
+  "groups": [
+    {
+      "name": "teach-ai.tracer",
+      "type": "cn.iocoder.teach-ai.framework.tracer.config.TracerProperties",
+      "sourceType": "cn.iocoder.teach-ai.framework.tracer.config.TracerProperties"
+    }
+  ],
+  "properties": [],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

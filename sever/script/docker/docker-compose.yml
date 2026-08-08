@@ -1,0 +1,162 @@
+version: '3'
+services:
+  teach-ai-gateway:
+    image: teach-ai-gateway
+    container_name: teach-ai-gateway
+    environment:
+      - TZ=Asia/Shanghai # 配置程序默认时区为上海（中国标准时间）
+      - JAVA_TOOL_OPTIONS=-javaagent:/data/skywalking/skywalking-agent/skywalking-agent.jar # 配置skywalking
+      - SW_AGENT_NAME=teach-ai-gateway
+      - SW_AGENT_TRACE_IGNORE_PATH=Redisson/PING,/actuator/**,/admin/**
+      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=[YOUR_SKYWALKING_ADDR] # 请替换 your.skywalking.addr 为你的 skywalking 地址
+      - SPRING_PROFILES_ACTIVE=test # 指定程序运行环境
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=[YOUR_NACOS_ADDR] # 配置中心地址
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=[YOUR_NACOS_ADDR]  # 注册中心地址
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+    volumes:
+      - /docker/teach-ai-cloud/logs:/root/logs/
+      - /data/skywalking/skywalking-agent:/data/skywalking/skywalking-agent
+    restart: always
+    network_mode: host # 以主机网络环境运行
+  teach-ai-system:
+    image: teach-ai-module-system-biz
+    container_name: teach-ai-system
+    environment:
+      - TZ=Asia/Shanghai # 配置程序默认时区为上海（中国标准时间）
+      - JAVA_TOOL_OPTIONS=-javaagent:/data/skywalking/skywalking-agent/skywalking-agent.jar # 配置skywalking
+      - SW_AGENT_NAME=teach-ai-gateway
+      - SW_AGENT_TRACE_IGNORE_PATH=Redisson/PING,/actuator/**,/admin/**
+      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=[YOUR_SKYWALKING_ADDR] # 请替换 your.skywalking.addr 为你的 skywalking 地址
+      - SPRING_PROFILES_ACTIVE=test # 指定程序运行环境
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=[YOUR_NACOS_ADDR] # 配置中心地址
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=[YOUR_NACOS_ADDR]  # 注册中心地址
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+    volumes:
+      - /docker/teach-ai-cloud/logs:/root/logs/
+      - /data/skywalking/skywalking-agent:/data/skywalking/skywalking-agent
+    healthcheck:
+      test: [ "CMD","curl","-f","http://localhost:48081" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: always
+    network_mode: host
+  teach-ai-infra:
+    image: teach-ai-module-infra-biz
+    container_name: teach-ai-infra
+    environment:
+      - TZ=Asia/Shanghai # 配置程序默认时区为上海（中国标准时间）
+      - JAVA_TOOL_OPTIONS=-javaagent:/data/skywalking/skywalking-agent/skywalking-agent.jar # 配置skywalking
+      - SW_AGENT_NAME=teach-ai-gateway
+      - SW_AGENT_TRACE_IGNORE_PATH=Redisson/PING,/actuator/**,/admin/**
+      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=[YOUR_SKYWALKING_ADDR] # 请替换 your.skywalking.addr 为你的 skywalking 地址
+      - SPRING_PROFILES_ACTIVE=test # 指定程序运行环境
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=[YOUR_NACOS_ADDR] # 配置中心地址
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=[YOUR_NACOS_ADDR]  # 注册中心地址
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+    volumes:
+      - /docker/teach-ai-cloud/logs:/root/logs/
+      - /data/skywalking/skywalking-agent:/data/skywalking/skywalking-agent
+    restart: always
+    network_mode: host
+    healthcheck:
+      test: [ "CMD","curl","-f","http://localhost:48082" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      teach-ai-system:
+        condition: service_healthy
+  teach-ai-report:
+    image: teach-ai-module-report-biz
+    container_name: teach-ai-report
+    environment:
+      - TZ=Asia/Shanghai # 配置程序默认时区为上海（中国标准时间）
+      - JAVA_TOOL_OPTIONS=-javaagent:/data/skywalking/skywalking-agent/skywalking-agent.jar # 配置skywalking
+      - SW_AGENT_NAME=teach-ai-gateway
+      - SW_AGENT_TRACE_IGNORE_PATH=Redisson/PING,/actuator/**,/admin/**
+      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=[YOUR_SKYWALKING_ADDR] # 请替换 your.skywalking.addr 为你的 skywalking 地址
+      - SPRING_PROFILES_ACTIVE=test # 指定程序运行环境
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=[YOUR_NACOS_ADDR] # 配置中心地址
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=[YOUR_NACOS_ADDR]  # 注册中心地址
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+    volumes:
+      - /docker/teach-ai-cloud/logs:/root/logs/
+      - /data/skywalking/skywalking-agent:/data/skywalking/skywalking-agent
+    restart: always
+    network_mode: host
+    depends_on:
+      teach-ai-infra:
+        condition: service_healthy
+  teach-ai-bpm:
+    image: teach-ai-module-bpm-biz
+    container_name: teach-ai-bpm
+    environment:
+      - TZ=Asia/Shanghai # 配置程序默认时区为上海（中国标准时间）
+      - JAVA_TOOL_OPTIONS=-javaagent:/data/skywalking/skywalking-agent/skywalking-agent.jar # 配置skywalking
+      - SW_AGENT_NAME=teach-ai-gateway
+      - SW_AGENT_TRACE_IGNORE_PATH=Redisson/PING,/actuator/**,/admin/**
+      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=[YOUR_SKYWALKING_ADDR] # 请替换 your.skywalking.addr 为你的 skywalking 地址
+      - SPRING_PROFILES_ACTIVE=test # 指定程序运行环境
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=[YOUR_NACOS_ADDR] # 配置中心地址
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=[YOUR_NACOS_ADDR]  # 注册中心地址
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+    volumes:
+      - /docker/teach-ai-cloud/logs:/root/logs/
+      - /data/skywalking/skywalking-agent:/data/skywalking/skywalking-agent
+    restart: always
+    network_mode: host
+    depends_on:
+      teach-ai-infra:
+        condition: service_healthy
+  teach-ai-pay:
+    image: teach-ai-module-pay-biz
+    container_name: teach-ai-pay
+    environment:
+      - TZ=Asia/Shanghai # 配置程序默认时区为上海（中国标准时间）
+      - JAVA_TOOL_OPTIONS=-javaagent:/data/skywalking/skywalking-agent/skywalking-agent.jar # 配置skywalking
+      - SW_AGENT_NAME=teach-ai-gateway
+      - SW_AGENT_TRACE_IGNORE_PATH=Redisson/PING,/actuator/**,/admin/**
+      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=[YOUR_SKYWALKING_ADDR] # 请替换 your.skywalking.addr 为你的 skywalking 地址
+      - SPRING_PROFILES_ACTIVE=test # 指定程序运行环境
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=[YOUR_NACOS_ADDR] # 配置中心地址
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=[YOUR_NACOS_ADDR]  # 注册中心地址
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+    volumes:
+      - /docker/teach-ai-cloud/logs:/root/logs/
+      - /data/skywalking/skywalking-agent:/data/skywalking/skywalking-agent
+    restart: always
+    network_mode: host
+    depends_on:
+      teach-ai-infra:
+        condition: service_healthy
+  teach-ai-mp:
+    image: teach-ai-module-mp-biz
+    container_name: teach-ai-mp
+    environment:
+      - TZ=Asia/Shanghai # 配置程序默认时区为上海（中国标准时间）
+      - JAVA_TOOL_OPTIONS=-javaagent:/data/skywalking/skywalking-agent/skywalking-agent.jar # 配置skywalking
+      - SW_AGENT_NAME=teach-ai-gateway
+      - SW_AGENT_TRACE_IGNORE_PATH=Redisson/PING,/actuator/**,/admin/**
+      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=[YOUR_SKYWALKING_ADDR] # 请替换 your.skywalking.addr 为你的 skywalking 地址
+      - SPRING_PROFILES_ACTIVE=test # 指定程序运行环境
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=[YOUR_NACOS_ADDR] # 配置中心地址
+      - SPRING_CLOUD_NACOS_CONFIG_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+      - SPRING_CLOUD_NACOS_SERVER_ADDR=[YOUR_NACOS_ADDR]  # 注册中心地址
+      - SPRING_CLOUD_NACOS_DISCOVERY_NAMESPACE=[YOUR_NAMESPACE] # 命名空间
+    volumes:
+      - /docker/teach-ai-cloud/logs:/root/logs/
+      - /data/skywalking/skywalking-agent:/data/skywalking/skywalking-agent
+    restart: always
+    network_mode: host
+    depends_on:
+      teach-ai-infra:
+        condition: service_healthy

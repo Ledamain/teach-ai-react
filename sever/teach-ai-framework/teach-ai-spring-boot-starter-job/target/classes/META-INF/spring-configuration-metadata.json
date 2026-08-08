@@ -1,0 +1,76 @@
+{
+  "groups": [
+    {
+      "name": "xxl.job",
+      "type": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties"
+    },
+    {
+      "name": "xxl.job.admin",
+      "type": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties$AdminProperties",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties"
+    },
+    {
+      "name": "xxl.job.executor",
+      "type": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties$ExecutorProperties",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "xxl.job.access-token",
+      "type": "java.lang.String",
+      "description": "访问令牌",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties"
+    },
+    {
+      "name": "xxl.job.admin.addresses",
+      "type": "java.lang.String",
+      "description": "调度器地址",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties$AdminProperties"
+    },
+    {
+      "name": "xxl.job.enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否开启，默认为 true 关闭",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "xxl.job.executor.app-name",
+      "type": "java.lang.String",
+      "description": "应用名",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties$ExecutorProperties"
+    },
+    {
+      "name": "xxl.job.executor.ip",
+      "type": "java.lang.String",
+      "description": "执行器的 IP",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties$ExecutorProperties"
+    },
+    {
+      "name": "xxl.job.executor.log-path",
+      "type": "java.lang.String",
+      "description": "日志地址",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties$ExecutorProperties"
+    },
+    {
+      "name": "xxl.job.executor.log-retention-days",
+      "type": "java.lang.Integer",
+      "description": "日志保留天数",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties$ExecutorProperties",
+      "defaultValue": 30
+    },
+    {
+      "name": "xxl.job.executor.port",
+      "type": "java.lang.Integer",
+      "description": "执行器的 Port",
+      "sourceType": "cn.iocoder.teach-ai.framework.quartz.config.XxlJobProperties$ExecutorProperties",
+      "defaultValue": -1
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

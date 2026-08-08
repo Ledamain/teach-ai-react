@@ -1,0 +1,3 @@
+cn.iocoder.teach-ai.framework.mq.redis.config.YudaoRedisMQProducerAutoConfiguration
+cn.iocoder.teach-ai.framework.mq.redis.config.YudaoRedisMQConsumerAutoConfiguration
+cn.iocoder.teach-ai.framework.mq.rabbitmq.config.YudaoRabbitMQAutoConfiguration

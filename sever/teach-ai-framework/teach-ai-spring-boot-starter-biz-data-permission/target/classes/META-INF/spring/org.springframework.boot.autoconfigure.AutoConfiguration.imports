@@ -1,0 +1,3 @@
+cn.iocoder.teach-ai.framework.datapermission.config.YudaoDataPermissionAutoConfiguration
+cn.iocoder.teach-ai.framework.datapermission.config.YudaoDeptDataPermissionAutoConfiguration
+cn.iocoder.teach-ai.framework.datapermission.config.YudaoDataPermissionRpcAutoConfiguration

@@ -1,0 +1,2 @@
+cn.iocoder.teach-ai.framework.redis.config.YudaoRedisAutoConfiguration
+cn.iocoder.teach-ai.framework.redis.config.YudaoCacheAutoConfiguration

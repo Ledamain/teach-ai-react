@@ -1,0 +1,29 @@
+{
+  "groups": [
+    {
+      "name": "teach-ai.websocket",
+      "type": "cn.iocoder.teach-ai.framework.websocket.config.WebSocketProperties",
+      "sourceType": "cn.iocoder.teach-ai.framework.websocket.config.WebSocketProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "teach-ai.websocket.path",
+      "type": "java.lang.String",
+      "description": "WebSocket 的连接路径",
+      "sourceType": "cn.iocoder.teach-ai.framework.websocket.config.WebSocketProperties",
+      "defaultValue": "\/ws"
+    },
+    {
+      "name": "teach-ai.websocket.sender-type",
+      "type": "java.lang.String",
+      "description": "消息发送器的类型 可选值：local、redis、rocketmq、kafka、rabbitmq",
+      "sourceType": "cn.iocoder.teach-ai.framework.websocket.config.WebSocketProperties",
+      "defaultValue": "local"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

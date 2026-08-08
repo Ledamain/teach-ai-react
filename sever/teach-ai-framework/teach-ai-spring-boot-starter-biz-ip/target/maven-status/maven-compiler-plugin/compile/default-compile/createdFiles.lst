@@ -1,0 +1,5 @@
+cn/iocoder/teach-ai/framework/ip/core/Area.class
+cn/iocoder/teach-ai/framework/ip/core/utils/AreaUtils.class
+cn/iocoder/teach-ai/framework/ip/core/enums/AreaTypeEnum.class
+cn/iocoder/teach-ai/framework/ip/core/utils/IPUtils.class
+cn/iocoder/teach-ai/framework/ip/package-info.class

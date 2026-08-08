@@ -1,0 +1,5 @@
+cn.iocoder.teach-ai.framework.security.config.YudaoSecurityRpcAutoConfiguration
+cn.iocoder.teach-ai.framework.security.config.YudaoSecurityAutoConfiguration
+cn.iocoder.teach-ai.framework.security.config.YudaoWebSecurityConfigurerAdapter
+cn.iocoder.teach-ai.framework.operatelog.config.YudaoOperateLogConfiguration
+cn.iocoder.teach-ai.framework.operatelog.config.YudaoOperateLogRpcAutoConfiguration

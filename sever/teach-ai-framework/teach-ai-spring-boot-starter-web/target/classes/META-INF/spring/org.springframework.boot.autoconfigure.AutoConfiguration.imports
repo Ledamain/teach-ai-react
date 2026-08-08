@@ -1,0 +1,8 @@
+cn.iocoder.teach-ai.framework.apilog.config.YudaoApiLogAutoConfiguration
+cn.iocoder.teach-ai.framework.jackson.config.YudaoJacksonAutoConfiguration
+cn.iocoder.teach-ai.framework.swagger.config.YudaoSwaggerAutoConfiguration
+cn.iocoder.teach-ai.framework.web.config.YudaoWebAutoConfiguration
+cn.iocoder.teach-ai.framework.apilog.config.YudaoApiLogRpcAutoConfiguration
+cn.iocoder.teach-ai.framework.xss.config.YudaoXssAutoConfiguration
+cn.iocoder.teach-ai.framework.banner.config.YudaoBannerAutoConfiguration
+cn.iocoder.teach-ai.framework.encrypt.config.YudaoApiEncryptAutoConfiguration

@@ -1,0 +1,21 @@
+{
+  "groups": [
+    {
+      "name": "teach-ai.env",
+      "type": "cn.iocoder.teach-ai.framework.env.config.EnvProperties",
+      "sourceType": "cn.iocoder.teach-ai.framework.env.config.EnvProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "teach-ai.env.tag",
+      "type": "java.lang.String",
+      "description": "环境标签",
+      "sourceType": "cn.iocoder.teach-ai.framework.env.config.EnvProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

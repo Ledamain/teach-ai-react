@@ -1,0 +1,46 @@
+{
+  "groups": [
+    {
+      "name": "teach-ai.tenant",
+      "type": "cn.iocoder.teach-ai.framework.tenant.config.TenantProperties",
+      "sourceType": "cn.iocoder.teach-ai.framework.tenant.config.TenantProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "teach-ai.tenant.enable",
+      "type": "java.lang.Boolean",
+      "description": "是否开启",
+      "sourceType": "cn.iocoder.teach-ai.framework.tenant.config.TenantProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "teach-ai.tenant.ignore-caches",
+      "type": "java.util.Set<java.lang.String>",
+      "description": "需要忽略多租户的 Spring Cache 缓存 即默认所有缓存都开启多租户的功能，所以记得添加对应的 tenant_id 字段哟",
+      "sourceType": "cn.iocoder.teach-ai.framework.tenant.config.TenantProperties"
+    },
+    {
+      "name": "teach-ai.tenant.ignore-tables",
+      "type": "java.util.Set<java.lang.String>",
+      "description": "需要忽略多租户的表 即默认所有表都开启多租户的功能，所以记得添加对应的 tenant_id 字段哟",
+      "sourceType": "cn.iocoder.teach-ai.framework.tenant.config.TenantProperties"
+    },
+    {
+      "name": "teach-ai.tenant.ignore-urls",
+      "type": "java.util.Set<java.lang.String>",
+      "description": "需要忽略多租户的请求 默认情况下，每个请求需要带上 tenant-id 的请求头。但是，部分请求是无需带上的，例如说短信回调、支付回调等 Open API！",
+      "sourceType": "cn.iocoder.teach-ai.framework.tenant.config.TenantProperties"
+    },
+    {
+      "name": "teach-ai.tenant.ignore-visit-urls",
+      "type": "java.util.Set<java.lang.String>",
+      "description": "需要忽略跨（切换）租户访问的请求 原因是：某些接口，访问的是个人信息，在跨租户是获取不到的！",
+      "sourceType": "cn.iocoder.teach-ai.framework.tenant.config.TenantProperties"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

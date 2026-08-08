@@ -1,0 +1,3 @@
+cn.iocoder.teach-ai.framework.datasource.config.YudaoDataSourceAutoConfiguration
+cn.iocoder.teach-ai.framework.mybatis.config.YudaoMybatisAutoConfiguration
+cn.iocoder.teach-ai.framework.translate.config.YudaoTranslateAutoConfiguration

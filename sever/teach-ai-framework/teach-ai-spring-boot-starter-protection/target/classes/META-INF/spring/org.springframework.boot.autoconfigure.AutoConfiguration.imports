@@ -1,0 +1,4 @@
+cn.iocoder.teach-ai.framework.idempotent.config.YudaoIdempotentConfiguration
+cn.iocoder.teach-ai.framework.lock4j.config.YudaoLock4jConfiguration
+cn.iocoder.teach-ai.framework.ratelimiter.config.YudaoRateLimiterConfiguration
+cn.iocoder.teach-ai.framework.signature.config.YudaoApiSignatureAutoConfiguration
